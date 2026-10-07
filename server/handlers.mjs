@@ -29,6 +29,9 @@ export function handler(action,getStore){return async req=>{
       // Immutable, sequenced snapshots make retrying idempotent and prevent late writes from replacing newer work.
       const key=`snapshot/${data.attemptId}/${String(snapshot.sequence).padStart(6,'0')}`;
       const result=await store.setJSON(key,{...snapshot,updatedAt},{onlyIfNew:true});
+      // One immutable record per section; the first server-recorded completion time is kept.
+      const finished=[...new Set(snapshot.events.filter(e=>e.type==='scene-complete'&&e.scene).map(e=>e.scene))];
+      await Promise.all(finished.map(scene=>store.setJSON(`complete/${data.attemptId}/${scene}`,{scene,completedAt:updatedAt},{onlyIfNew:true})));
       return json({ok:true,sequence:snapshot.sequence,updatedAt,duplicate:result.modified===false});
     }
     if(action==='index'){
@@ -45,8 +48,11 @@ export function handler(action,getStore){return async req=>{
         for(let i=0;i<readKeys.length;i+=10)snapshots.push(...await Promise.all(readKeys.slice(i,i+10).map(k=>store.get(k,{type:'json'}))));
         const present=snapshots.filter(Boolean),latest=present.at(-1);
         const seen=new Set(),events=present.flatMap(s=>s.events).filter(e=>{if(seen.has(e.id))return false;seen.add(e.id);return true;});
+        const completionKeys=await allKeys(store,`complete/${session.attemptId}/`);
+        const completions=(await Promise.all(completionKeys.map(k=>store.get(k,{type:'json'})))).filter(Boolean);
+        const completedAt=Object.fromEntries(completions.map(c=>[c.scene,c.completedAt]));
         const {tokenHash,...person}=session;
-        records.push({...person,updatedAt:latest?.updatedAt||session.startedAt,summary:summarize(latest?.state,events),...(id?{state:latest?.state||null,events}:{} )});
+        records.push({...person,updatedAt:latest?.updatedAt||session.startedAt,summary:summarize(latest?.state,events,completedAt),...(id?{state:latest?.state||null,events}:{} )});
       }
       return json({attempts:records.sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt))});
     }

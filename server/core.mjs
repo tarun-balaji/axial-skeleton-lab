@@ -50,7 +50,7 @@ export function validateSnapshot(data) {
   for(const e of data.events){assert(/^[0-9a-f-]{36}$/i.test(e.id)&&['labels','practical','clue','reasoning','scene-complete','pdf-export','submission-open'].includes(e.type));assert(!e.scene||scenes.some(s=>s.id===e.scene));}
   return {sequence:data.sequence,state,events:data.events};
 }
-export function summarize(state={cur:0,sc:{}},events=[]) {
+export function summarize(state={cur:0,sc:{}},events=[],completedAt={}) {
   let completed=0,started=0,labelChecks=0,practicalRounds=0,hints=0,reasoning=0;
   const detail=scenes.map(scene=>{
     const s=state.sc[scene.id]||{},pr=s.pr||{};
@@ -58,10 +58,14 @@ export function summarize(state={cur:0,sc:{}},events=[]) {
     labelChecks+=(s.checks||[]).length;practicalRounds+=pr.rounds||0;
     hints+=Object.keys(s.clue||{}).length+Object.keys(pr.clue||{}).length;
     reasoning+=(s.prove||[]).filter(p=>(p.a||'').trim().length>=25).length;
-    return {id:scene.id,phase:s.phase||'not-started',done,labelChecks:(s.checks||[]).length,practicalRounds:pr.rounds||0,reasoning:s.prove||[],missed:Object.entries(s.miss||{}).filter(([,n])=>n>0).map(([i,n])=>({term:scene.tags[i],count:n})),practicalMissed:Object.entries(pr.miss||{}).filter(([,n])=>n>0).map(([i,n])=>({term:scene.tags[i],count:n}))};
+    // Prefer the server-recorded time; fall back to the browser's clock for older records.
+    const at=completedAt[scene.id]||(done&&Number.isFinite(s.completedAt)?new Date(s.completedAt).toISOString():null);
+    return {id:scene.id,phase:s.phase||'not-started',done,completedAt:done?at:null,labelChecks:(s.checks||[]).length,practicalRounds:pr.rounds||0,reasoning:s.prove||[],missed:Object.entries(s.miss||{}).filter(([,n])=>n>0).map(([i,n])=>({term:scene.tags[i],count:n})),practicalMissed:Object.entries(pr.miss||{}).filter(([,n])=>n>0).map(([i,n])=>({term:scene.tags[i],count:n}))};
   });
   const first=Object.values(state.sc).flatMap(s=>s.pr?.firstResults||[]);
-  return {completed,total:scenes.length,started,percent:Math.round(100*completed/scenes.length),current:scenes[state.cur]?.id,labelChecks,practicalRounds,hints,reasoning,firstCorrect:first.filter(x=>x.correct).length,firstTotal:first.length,exported:!!state.exportedAt,detail};
+  const times=detail.map(d=>d.completedAt);
+  const allCompletedAt=completed===scenes.length&&times.every(Boolean)?times.sort().at(-1):null;
+  return {completed,allCompletedAt,total:scenes.length,started,percent:Math.round(100*completed/scenes.length),current:scenes[state.cur]?.id,labelChecks,practicalRounds,hints,reasoning,firstCorrect:first.filter(x=>x.correct).length,firstTotal:first.length,exported:!!state.exportedAt,detail};
 }
 export const attemptCredentials=()=>({attemptId:randomUUID(),token:randomBytes(32).toString('hex')});
 const cookieName='hw7_admin';
