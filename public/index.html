@@ -1,0 +1,1238 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HW7 3D Practical Prep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: lab-bench app. Header + three-column workbench (bank | specimen stage | answers), bottom toolbar under the stage. Stacks on phones. */
+:root{
+  --bg:#edf1f2; --panel:#ffffff; --ink:#172126; --muted:#56676e; --line:#d3dcdf; --soft:#e5ecee;
+  --stage:#d9e1e3; --accent:#0d6b67; --accent-ink:#ffffff; --pin:#d9480f; --pin-ink:#ffffff;
+  --ok:#2b8a3e; --ok-soft:#e3f4e7; --bad:#c92a2a; --bad-soft:#fbe7e7; --warn:#a15c00; --warn-soft:#fdf0dc;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1517; --panel:#162024; --ink:#e3ebed; --muted:#93a4aa; --line:#27363b; --soft:#1d2a2f;
+  --stage:#0b1012; --accent:#4cbfb5; --accent-ink:#06201e; --pin:#ff7b4a; --pin-ink:#1a0a03;
+  --ok:#62c87c; --ok-soft:#163222; --bad:#ff7070; --bad-soft:#3a1818; --warn:#f0b056; --warn-soft:#33260f; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0f1517; --panel:#162024; --ink:#e3ebed; --muted:#93a4aa; --line:#27363b; --soft:#1d2a2f;
+  --stage:#0b1012; --accent:#4cbfb5; --accent-ink:#06201e; --pin:#ff7b4a; --pin-ink:#1a0a03;
+  --ok:#62c87c; --ok-soft:#163222; --bad:#ff7070; --bad-soft:#3a1818; --warn:#f0b056; --warn-soft:#33260f; color-scheme:dark }
+
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+.lbl{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#app{display:flex;flex-direction:column;min-height:100%}
+
+/* Buttons */
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:14px;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08)}
+.btn.ghost{background:transparent}
+.btn.small{padding:5px 10px;font-size:13px}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+
+/* Top bar */
+.topbar{display:flex;align-items:center;gap:16px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .hw{font-family:var(--f-mono);font-weight:600;font-size:13px;background:var(--accent);color:var(--accent-ink);padding:4px 7px;border-radius:5px}
+.brand h1{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.brand p{margin:0;font-size:12.5px;color:var(--muted)}
+#stepper{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.chip{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--soft);font-family:var(--f-mono);font-weight:600;font-size:13px;cursor:pointer;position:relative;display:grid;place-items:center}
+.chip.cur{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;background:var(--panel)}
+.chip.done{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip.prog::after{content:"";position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--pin)}
+.who{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted)}
+.who b{color:var(--ink)}
+
+/* Landing */
+#landing{flex:1;padding-block:40px 56px;padding-inline:16px}
+.land{max-width:860px;margin:0 auto;display:grid;gap:28px}
+.land .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.land h2{font-size:clamp(34px,6vw,58px);font-weight:800;letter-spacing:-.025em;line-height:1}
+.land h2 + p{font-family:var(--f-display);font-size:clamp(18px,2.4vw,22px);color:var(--muted);margin:8px 0 0;font-weight:500}
+.premise{border-left:3px solid var(--pin);padding:4px 0 4px 18px;font-size:17px;max-width:62ch;margin:0}
+.startbox{display:flex;gap:10px;flex-wrap:wrap;align-items:end;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.startbox label{display:grid;gap:6px;flex:1 1 260px}
+.startbox input{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px;font-size:16px;width:100%}
+.startbox .btn{padding:11px 20px;font-size:15px}
+.resume{flex-basis:100%;font-size:14px;color:var(--muted);margin:0}
+.two{display:grid;grid-template-columns:1.1fr .9fr;gap:28px}
+.steps{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:s}
+.steps li{display:grid;grid-template-columns:28px 1fr;gap:10px;counter-increment:s}
+.steps li::before{content:counter(s);font-family:var(--f-mono);font-weight:600;font-size:12px;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);margin-top:1px}
+.scenelist{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:4px;font-size:14px}
+.scenelist li{display:flex;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line)}
+.scenelist .k{font-family:var(--f-mono);font-size:12px;color:var(--muted);width:18px}
+.scenelist .d{color:var(--muted);font-size:13px;margin-left:auto;text-align:right}
+table.pts{border-collapse:collapse;width:100%;font-size:14px;margin-top:10px}
+table.pts td{padding:6px 0;border-bottom:1px solid var(--line)}
+table.pts td:last-child{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+table.pts tr:last-child td{font-weight:700;border-bottom:0}
+.instr{font-size:13px;color:var(--muted)}
+
+/* Lab */
+#lab{flex:1;display:grid;grid-template-columns:250px minmax(0,1fr) 330px;min-height:0;height:calc(100vh - 57px)}
+#lab > *{min-height:0;min-width:0}
+.side{background:var(--panel);overflow:auto;padding:16px;display:flex;flex-direction:column;gap:18px}
+#left{border-right:1px solid var(--line)}
+#right{border-left:1px solid var(--line)}
+#center{display:flex;flex-direction:column;min-height:0}
+#stage{position:relative;flex:1;min-height:320px;background:var(--stage);overflow:hidden;touch-action:none}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+#gl:active{cursor:grabbing}
+#overlay{position:absolute;inset:0;pointer-events:none}
+#gizmo{position:absolute;right:10px;bottom:10px;width:104px;height:104px;pointer-events:none}
+.stagehead{position:absolute;left:12px;top:12px;right:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;pointer-events:none}
+.stagehead h2{font-size:18px;font-weight:700;letter-spacing:-.01em;background:color-mix(in srgb,var(--panel) 82%,transparent);padding:4px 10px;border-radius:6px}
+.phase{font-family:var(--f-mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:6px;background:var(--panel);border:1px solid var(--line)}
+.phase.practical{background:var(--pin);border-color:var(--pin);color:var(--pin-ink)}
+.phase.done{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.stagehint{position:absolute;left:12px;bottom:10px;font-size:12px;color:var(--muted);background:color-mix(in srgb,var(--panel) 75%,transparent);padding:3px 8px;border-radius:5px;pointer-events:none;max-width:calc(100% - 140px)}
+.loading{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-mono);font-size:13px;color:var(--muted);pointer-events:none}
+
+.pin{position:absolute;left:0;top:0;pointer-events:auto;cursor:pointer;border:0;padding:0;background:none;transform-origin:50% 100%;will-change:transform}
+.pin .tg{display:flex;align-items:center;gap:5px;background:var(--pin);color:var(--pin-ink);font-family:var(--f-mono);font-weight:600;font-size:13px;line-height:1;padding:5px 7px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.25);white-space:nowrap}
+.pin .stem{display:block;width:2px;height:12px;background:var(--pin);margin:0 auto}
+.pin .nm{font-family:var(--f-body);font-weight:600;font-size:12.5px}
+.pin.ok .tg,.pin.ok .stem{background:var(--ok);color:#fff}
+.pin.bad .tg{box-shadow:0 0 0 2px var(--bad),0 1px 3px rgba(0,0,0,.25)}
+.pin.sel .tg{outline:2px solid var(--ink);outline-offset:2px}
+.pin.occ{opacity:.42}
+.pin.occ:hover{opacity:.85}
+
+#toolbar{display:flex;gap:8px;padding:10px 12px;background:var(--panel);border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+#toolbar .sp{flex:1}
+
+/* Left panel */
+.bank{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.term{border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:5px 11px;font-size:13.5px;cursor:pointer;text-align:left}
+.term:hover{border-color:var(--accent)}
+.term:disabled{cursor:default;opacity:.6}
+.note{font-size:13px;color:var(--muted);margin:6px 0 0}
+.bar{height:6px;border-radius:3px;background:var(--soft);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.mini{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:2px;font-size:13.5px}
+.mini li{display:flex;gap:8px;align-items:center;padding:4px 6px;border-radius:6px;cursor:pointer}
+.mini li:hover{background:var(--soft)}
+.mini li.cur{background:var(--soft);font-weight:600}
+.mini .dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted);flex:none}
+.mini .dot.done{background:var(--accent);border-color:var(--accent)}
+.mini .dot.prog{border-color:var(--pin);background:var(--pin)}
+.mini .k{font-family:var(--f-mono);font-size:12px;color:var(--muted);width:14px}
+
+/* Right panel */
+.fb{border-radius:10px;padding:11px 13px;font-size:14px;background:var(--soft);border:1px solid var(--line)}
+.fb.ok{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 40%,transparent)}
+.fb.bad{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
+.fb.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
+.fb p{margin:0}
+.fb p + p{margin-top:6px}
+.fb .tip{font-size:13.5px}
+.answers{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.row{display:grid;grid-template-columns:34px minmax(0,1fr) 22px;gap:8px;align-items:center;padding:6px;border-radius:8px;border:1px solid transparent}
+.row.sel{border-color:var(--accent);background:var(--soft)}
+.row .num{width:30px;height:30px;border-radius:6px;border:0;background:var(--pin);color:var(--pin-ink);font-family:var(--f-mono);font-weight:600;cursor:pointer}
+.row.locked .num{background:var(--ok);color:#fff}
+.row select,.row input{width:100%;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 8px;font-size:14px}
+.row.locked select,.row.locked input{border-color:color-mix(in srgb,var(--ok) 50%,transparent);background:var(--ok-soft)}
+.row.wrong select,.row.wrong input{border-color:var(--bad);background:var(--bad-soft)}
+.row .st{font-weight:700;text-align:center}
+.row.locked .st{color:var(--ok)}
+.row.wrong .st{color:var(--bad)}
+.row .ask{grid-column:2/4;font-size:12px;color:var(--muted);margin:-2px 0 0;font-family:var(--f-mono);letter-spacing:.04em;text-transform:uppercase}
+.row .cluebox{grid-column:2/4;font-size:13.5px}
+.row .cluebox p{margin:4px 0 0;padding:7px 9px;border-radius:7px;background:var(--warn-soft);color:var(--ink)}
+.hist{list-style:none;margin:8px 0 0;padding:0;font-size:13.5px;display:grid;gap:3px;font-variant-numeric:tabular-nums}
+.hist li{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding:3px 0}
+.empty{font-size:13.5px;color:var(--muted);margin:6px 0 0}
+.prove{display:grid;gap:8px}
+.prove .q{font-weight:600;margin:0}
+.prove textarea{width:100%;min-height:96px;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px;font-size:14px;resize:vertical}
+.prove .count{font-size:12px;color:var(--muted);font-family:var(--f-mono);text-align:right}
+.thumb{width:100%;border-radius:8px;border:1px solid var(--line);display:block}
+.stats{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px;margin-top:8px;font-variant-numeric:tabular-nums}
+.stats dd{margin:0;font-family:var(--f-mono);text-align:right}
+.stats dt{color:var(--muted)}
+
+/* Final */
+#final{flex:1;padding-block:36px 56px;padding-inline:16px}
+.fin{max-width:860px;margin:0 auto;display:grid;gap:26px}
+.fin h2{font-size:clamp(28px,4.5vw,42px);font-weight:800;letter-spacing:-.02em}
+.pkg{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+.pkg li{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.pkg .mk{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;flex:none;border:1.5px solid var(--line);color:var(--muted)}
+.pkg li.done .mk{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pkg .k{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.ready{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;max-width:70ch}
+.ready h3{font-size:22px;margin-bottom:8px}
+.ready p{margin:8px 0 0}
+.revisit{margin:10px 0 0;padding-left:18px}
+
+/* Modal + author drawer */
+.modal{position:fixed;inset:0;background:rgba(5,10,12,.55);display:grid;place-items:center;padding:16px;z-index:20}
+.modal .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;max-width:min(920px,100%);max-height:calc(100% - 32px);overflow:auto;padding:18px;display:grid;gap:12px}
+.modal .card img{max-width:100%;border:1px solid var(--line);border-radius:6px}
+.modal .acts{display:flex;gap:8px;flex-wrap:wrap}
+#author{position:fixed;right:0;top:0;bottom:0;width:min(380px,100%);background:var(--panel);border-left:2px solid var(--pin);z-index:15;overflow:auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));display:grid;gap:14px;align-content:start;box-shadow:-8px 0 24px rgba(0,0,0,.18)}
+#author h3{font-size:18px}
+#author .grp{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+#author .acts{display:flex;gap:6px;flex-wrap:wrap}
+#author textarea{width:100%;min-height:130px;font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px}
+.atags{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.atags li{display:grid;grid-template-columns:30px 1fr 30px;gap:6px;align-items:center}
+.atags .n{font-family:var(--f-mono);font-weight:600;background:var(--pin);color:var(--pin-ink);border-radius:5px;text-align:center;padding:4px 0;font-size:12px}
+.atags select{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:5px;font-size:13px}
+.toggle{display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:14px;z-index:30;max-width:calc(100% - 32px)}
+
+@media (max-width:1100px){ #lab{grid-template-columns:220px minmax(0,1fr) 300px} }
+@media (max-width:900px){
+  #lab{display:flex;flex-direction:column;height:auto}
+  #center{order:1} #right{order:2;border-left:0;border-top:1px solid var(--line)} #left{order:3;border-right:0;border-top:1px solid var(--line)}
+  #stage{flex:none;height:62vh;min-height:300px}
+  .side{overflow:visible}
+  .two{grid-template-columns:1fr}
+  #stepper{margin-left:0;order:3;flex-basis:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><span class="hw">HW7</span><div><h1>3D Practical Prep</h1><p>Axial Skeleton + Pelvic Girdle</p></div></div>
+    <nav id="stepper" aria-label="Scenes" hidden></nav>
+    <div class="who" id="who" hidden><span>Student: <b id="whoName"></b></span><button class="btn small" id="toFinal">Submission</button></div>
+  </header>
+
+  <section id="landing">
+    <div class="land">
+      <div>
+        <div class="eyebrow">Homework 7 · 3D practical rehearsal</div>
+        <h2>3D Practical Prep</h2>
+        <p>Axial Skeleton + Pelvic Girdle</p>
+      </div>
+      <p class="premise">On a practical, the structure will not come with a label. Your job is to orient the specimen, locate the region, distinguish nearby structures, and identify what has been tagged. This activity gives you repeated practice doing exactly that.</p>
+      <div class="ready"><h3>One visit, one new attempt</h3><p>No student account is required. Previous attempts cannot be reopened, even on the same device. Keep this page open until you download your PDF. Refreshing, closing this tab, or returning later starts over.</p><p>Your name, school email, progress, answers, checks, and clue use are recorded for your instructor. First-attempt accuracy and retry counts are not graded. <b>Recording progress does not submit HW7.</b> Submit the generated PDF to D2L.</p><p><a href="instructions.html" target="_blank" rel="noopener">Read the complete instructions in a new tab</a></p></div>
+      <form class="startbox" id="startForm">
+        <label for="nameIn"><span class="lbl">Your name, as it appears in D2L</span><input id="nameIn" autocomplete="name" placeholder="First and last name" maxlength="100" required></label>
+        <label for="emailIn"><span class="lbl">School email</span><input id="emailIn" type="email" autocomplete="email" maxlength="160" required></label>
+        <label for="codeIn"><span class="lbl">Course access code (only if supplied by your instructor)</span><input id="codeIn" type="password" autocomplete="off" maxlength="100"></label>
+        <label><input id="ackIn" type="checkbox" required> I understand that this attempt cannot be reopened and that I must upload one PDF to D2L.</label>
+        <button class="btn primary" type="submit" id="beginButton">Begin new attempt</button>
+        <p id="startError" role="alert"></p>
+        <p class="resume" id="resumeLine" hidden></p>
+      </form>
+      <div class="two">
+        <div>
+          <div class="lbl">How each scene works</div>
+          <ol class="steps">
+            <li><span>Rotate, zoom, and pan the specimen freely. Numbered tags mark structures, just like pins on a practical.</span></li>
+            <li><span>Assign a term to every tag, then press <b>Check Labels</b>. Correct answers lock in. Incorrect answers are flagged, but the correct name is not shown.</span></li>
+            <li><span>Reorient and retry. After two misses on a tag, an optional clue unlocks. It describes relationships, not names.</span></li>
+            <li><span><b>Practical Check:</b> the camera moves to a new orientation and you type names with no word bank.</span></li>
+            <li><span><b>Prove it:</b> explain the visual or spatial clue you would use on a different specimen.</span></li>
+            <li><span>When every scene is done, open <b>Submission</b>, download your submission PDF, and upload that one PDF to D2L.</span></li>
+          </ol>
+        </div>
+        <div>
+          <div class="lbl">Scenes</div>
+          <ul class="scenelist" id="sceneList"></ul>
+          <div class="lbl" style="margin-top:22px">Grading (30 points, mastery based)</div>
+          <table class="pts"><tbody>
+            <tr><td>Twelve 3D scenes completed to mastery</td><td>12</td></tr>
+            <tr><td>Twelve no-word-bank Practical Checks</td><td>12</td></tr>
+            <tr><td>"Prove it" reasoning prompts</td><td>4</td></tr>
+            <tr><td>Complete submission PDF uploaded to D2L</td><td>2</td></tr>
+            <tr><td>Total</td><td>30</td></tr>
+          </tbody></table>
+          <p class="note">First-attempt accuracy is not graded. Retry until you get it.</p>
+        </div>
+      </div>
+      <p class="note credit">3D specimens: BodyParts3D, &copy; The Database Center for Life Science, licensed under <a href="https://creativecommons.org/licenses/by-sa/2.1/jp/deed.en" target="_blank" rel="noopener">CC BY-SA 2.1 JP</a>. C1, C2, typical cervical vertebra, and articulated pelvis models supplied by the instructor. Meshes simplified and tagged for this course.</p>
+      <p class="instr">Instructor? <a href="admin/">Attempt dashboard</a>. <button class="linkbtn" id="openAuthor" type="button">Open authoring tools</button> to load real specimen models and place tags.</p>
+    </div>
+  </section>
+
+  <div style="padding:8px 18px;background:var(--panel);border-bottom:1px solid var(--line)"><span id="logStatus" role="status">Enter your information to start a new attempt.</span> <button class="linkbtn" id="retryLog">Retry recording</button><br><small>Keep this page open. Past attempts cannot be reopened. Download one PDF, then submit it in D2L.</small></div>
+  <section id="lab" hidden>
+    <aside id="left" class="side"></aside>
+    <div id="center">
+      <div id="stage">
+        <canvas id="gl"></canvas>
+        <div id="overlay"></div>
+        <canvas id="gizmo" width="208" height="208"></canvas>
+        <div class="stagehead"><h2 id="stageTitle"></h2><span class="phase" id="phaseTag"></span></div>
+        <div class="stagehint" id="stageHint">Drag to rotate · Scroll or pinch to zoom · Right-drag or two-finger drag to pan</div>
+        <div class="loading" id="loading" hidden>Loading model</div>
+      </div>
+      <div id="toolbar">
+        <button class="btn" id="bReset" title="Return to this scene's starting orientation">Reset View</button>
+        <button class="btn" id="bCenter" title="Keep the current angle, re-center and re-fit the model">Recenter Model</button>
+        <span class="sp"></span>
+        <button class="btn primary" id="bPrimary">Check Labels</button>
+        <button class="btn" id="bNext">Next Scene</button>
+      </div>
+    </div>
+    <aside id="right" class="side"></aside>
+  </section>
+
+  <section id="final" hidden>
+    <div class="fin">
+      <div>
+        <div class="lbl">Submission package</div>
+        <h2 id="finTitle">HW7 submission</h2>
+      </div>
+      <ul class="pkg" id="pkg"></ul>
+      <div class="acts" style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn primary" id="bExportAll">Download Submission PDF</button>
+        <button class="btn" id="bBackLab">Back to scenes</button>
+      </div>
+      <p class="note" id="finNote"></p>
+      <div class="ready"><h3>Your homework is submitted only when you upload it to D2L</h3><ol><li>Complete all 12 scenes and the hyoid Quick ID (13 of 13 items).</li><li>Press <b>Download Submission PDF</b> and open the downloaded file.</li><li>Check your name, 13 of 13 complete, all evidence images, and your Prove it responses. The PDF has 14 pages: one cover and 13 item pages.</li><li>Upload <b>exactly one PDF</b> to <b>HW7: 3D Practical Prep</b> in D2L and press <b>Submit</b>. Check D2L's confirmation.</li></ol><p>Do not submit screenshots, separate scene images, a site link, or a progress status message. Downloading the PDF and logging progress do not upload anything to D2L.</p></div>
+      <div class="ready" id="ready"></div>
+    </div>
+  </section>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">Submission image</h3>
+    <p class="note" id="modalNote" style="margin:0"></p>
+    <img id="modalImg" alt="Generated submission image">
+    <div class="acts"><button class="btn primary" id="bDownload">Download PNG</button><button class="btn" id="bCloseModal">Close</button></div>
+  </div>
+</div>
+
+<aside id="author" hidden>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>Authoring tools</h3><button class="btn small" id="bCloseAuthor">Close</button></div>
+  <p class="note" style="margin:0">Changes here apply to this browser session. Export the JSON when you are done and deploy it as <code>scenes.json</code> beside the page, with your models in a <code>models/</code> folder.</p>
+  <div class="grp"><div class="lbl">Scene</div><div id="aScene" style="font-weight:600"></div>
+    <label class="toggle"><input type="checkbox" id="aShow" checked> Show answer names on tags</label></div>
+  <div class="grp"><div class="lbl">Model</div>
+    <input type="file" id="aFile" accept=".stl,.glb">
+    <p class="note" style="margin:0">STL or binary glTF (.glb). Loading a file replaces the placeholder and clears this scene's tags.</p>
+    <div class="lbl" style="margin-top:4px">Orientation (superior is up, anterior faces the gizmo's A)</div>
+    <div class="acts"><button class="btn small" data-rot="x">Rotate X 90°</button><button class="btn small" data-rot="y">Rotate Y 90°</button><button class="btn small" data-rot="z">Rotate Z 90°</button></div>
+    <div class="acts"><button class="btn small" id="aView">Use current view as start view</button></div></div>
+  <div class="grp"><div class="lbl">Tags</div>
+    <label class="toggle"><input type="checkbox" id="aPlace"> Click the model to place a tag</label>
+    <ul class="atags" id="aTags"></ul>
+    <div class="acts"><button class="btn small" id="aClear">Clear tags</button></div></div>
+  <div class="grp"><div class="lbl">Export / import</div>
+    <div class="acts"><button class="btn small" id="aExport">Export scenes JSON</button><button class="btn small" id="aCopy">Copy</button><button class="btn small" id="aImport">Import pasted JSON</button></div>
+    <textarea id="aJson" spellcheck="false" placeholder="Exported JSON appears here. Paste JSON here to import."></textarea></div>
+  <div class="grp"><div class="lbl">Testing</div>
+    <div class="acts"><button class="btn small" id="aReset">Reset this scene's student progress</button><button class="btn small" id="aResetAll">Reset all progress</button></div></div>
+</aside>
+
+<script src="assets/three.min.js"></script>
+<script src="assets/OrbitControls.js"></script>
+<script src="assets/STLLoader.js"></script>
+<script src="assets/GLTFLoader.js"></script>
+<script src="assets/jspdf.umd.min.js"></script>
+<script src="attempt-log.js"></script>
+<script>
+"use strict";
+/* =========================================================
+   CONTENT: terms, clues, confusion sets, scenes
+   ========================================================= */
+const TERMS = {
+  body:{name:"body",acc:["vertebral body","centrum","body of vertebra"],clue:"Find the largest, most anterior mass. It bears weight and faces the intervertebral disc."},
+  inf_art_facet:{name:"inferior articular facet",acc:["inferior articular facets","inferior facet","inferior articular process"],clue:"A smooth joint surface carried on a process that projects downward to meet the vertebra below."},
+  inf_notch:{name:"inferior vertebral notches",acc:["inferior vertebral notch","inferior notch"],clue:"The deeper concavity on the underside of the pedicle. It forms most of an opening shared with the vertebra below."},
+  laminae:{name:"laminae",acc:["lamina"],clue:"Flat plates running from the region of the transverse process back to the midline, forming the roof of the ring."},
+  pedicle:{name:"pedicle",acc:["pedicles"],clue:"This structure connects the vertebral body to the posterior elements."},
+  spinous:{name:"spinous process",acc:["spinous processes","spine"],clue:"A single midline projection pointing posteriorly, often angled downward."},
+  sup_art_facet:{name:"superior articular facet",acc:["superior articular facets","superior facet","superior articular process"],clue:"A smooth joint surface carried on a process that projects upward to meet the vertebra above."},
+  sup_notch:{name:"superior vertebral notches",acc:["superior vertebral notch","superior notch"],clue:"The shallow concavity on the upper surface of the pedicle."},
+  transverse:{name:"transverse processes",acc:["transverse process"],clue:"Paired projections extending laterally from where the pedicle meets the lamina."},
+  arch:{name:"vertebral arch",acc:["neural arch","vertebral arches"],clue:"Everything posterior to the body that encloses the space for the spinal cord: the pedicles and laminae together."},
+  v_foramen:{name:"vertebral foramen",acc:["vertebral foramina"],clue:"The opening enclosed by the body in front and the posterior ring behind, within a single vertebra."},
+  iv_disc:{name:"intervertebral disc",acc:["intervertebral discs","disc","disk","intervertebral disk"],clue:"A fibrocartilage pad sitting between two adjacent vertebral bodies."},
+  iv_foramen:{name:"intervertebral foramen",acc:["intervertebral foramina"],clue:"A side opening formed between two vertebrae, bounded above and below by pedicles. Spinal nerves exit here."},
+  v_canal:{name:"vertebral canal",acc:["spinal canal"],clue:"The continuous tunnel formed when the openings of stacked vertebrae line up."},
+  auricular:{name:"auricular surface",acc:["auricular surfaces"],clue:"An ear-shaped surface on the lateral side where this bone meets the ilium."},
+  med_crest:{name:"median sacral crest",acc:["median crest"],clue:"A midline ridge on the posterior surface, formed by fused spinous processes."},
+  sac_canal:{name:"sacral canal",acc:[],clue:"The continuation of the vertebral canal through this bone. Its opening is at the base."},
+  sac_foramina:{name:"sacral foramina",acc:["sacral foramen","posterior sacral foramina","dorsal sacral foramina","anterior sacral foramina","pelvic sacral foramina"],clue:"Paired rows of openings that transmit branches of the sacral nerves."},
+  sternum:{name:"sternum",acc:["breastbone","breast bone"],clue:"The flat midline bone of the anterior chest wall."},
+  rib:{name:"rib",acc:["ribs","costa"],clue:"A long, curved flat bone that articulates posteriorly with thoracic vertebrae."},
+  costal_cart:{name:"costal cartilage",acc:["costal cartilages"],clue:"The cartilage segment that continues from the anterior end of a rib toward the sternum."},
+  ic_space:{name:"intercostal spaces",acc:["intercostal space"],clue:"The gap between two adjacent ribs, filled by muscle in life."},
+  true_ribs:{name:"true ribs",acc:["true rib","vertebrosternal ribs","vertebrosternal rib"],clue:"Count from the top. These ribs have their own cartilage attaching directly to the sternum."},
+  false_ribs:{name:"false ribs",acc:["false rib","vertebrochondral ribs","vertebrochondral rib"],clue:"These ribs reach the sternum only indirectly, by joining the cartilage of the rib above."},
+  floating_ribs:{name:"floating ribs",acc:["floating rib","vertebral ribs","vertebral rib"],clue:"The lowest ribs. Their anterior ends do not reach the sternum at all."},
+  manubrium:{name:"manubrium",acc:[],clue:"The superior, roughly trapezoidal segment."},
+  st_body:{name:"body",acc:["body of sternum","sternal body","gladiolus","body of the sternum"],clue:"The long middle segment where most of the cartilages attach."},
+  jugular:{name:"jugular notch",acc:["suprasternal notch"],clue:"The single midline depression on the superior border."},
+  clav_notch:{name:"clavicular notches",acc:["clavicular notch"],clue:"Paired facets at the superolateral corners, where the medial end of the clavicle articulates."},
+  xiphoid:{name:"xiphoid process",acc:["xiphoid"],clue:"The small, pointed inferior tip. It is cartilaginous in young people."},
+  angle:{name:"angle",acc:["angle of rib","costal angle","rib angle"],clue:"The point where the bone turns most sharply forward, lateral to the posterior knob."},
+  costal_groove:{name:"costal groove",acc:["subcostal groove"],clue:"A channel along the inferior, internal border that shelters the intercostal vessels and nerve."},
+  head:{name:"head",acc:["head of rib","rib head"],clue:"The most posterior end, with facets that articulate with vertebral bodies."},
+  neck:{name:"neck",acc:["neck of rib","rib neck"],clue:"The short, constricted segment between the most posterior end and the first knob."},
+  shaft:{name:"shaft",acc:["body of rib","rib shaft"],clue:"The long, thin, curved main portion of the bone."},
+  tubercle:{name:"tubercle",acc:["tubercle of rib","rib tubercle"],clue:"A posterior knob that articulates with the transverse process of a vertebra."},
+  acetabulum:{name:"acetabulum",acc:[],clue:"The deep cup on the lateral surface that receives the head of the femur."},
+  ilium:{name:"ilium",acc:[],clue:"The large, fan-shaped superior portion."},
+  ischium:{name:"ischium",acc:[],clue:"The posteroinferior portion. You sit on part of it."},
+  pubis:{name:"pubis",acc:["pubic bone"],clue:"The anteroinferior portion that meets its partner at the midline."},
+  iliac_crest:{name:"iliac crest",acc:[],clue:"The thick superior border of the large superior wing."},
+  asis:{name:"anterior superior iliac spine",acc:["asis"],clue:"The more prominent of two anterior projections, at the front end of the crest."},
+  aiis:{name:"anterior inferior iliac spine",acc:["aiis"],clue:"The lower of two anterior projections, just above the acetabulum."},
+  psis:{name:"posterior superior iliac spine",acc:["psis"],clue:"The point where the crest ends posteriorly."},
+  piis:{name:"posterior inferior iliac spine",acc:["piis"],clue:"A posterior projection sitting just above a large notch."},
+  gsn:{name:"greater sciatic notch",acc:[],clue:"The large, deep notch on the posterior border. The sciatic nerve passes through it."},
+  isch_spine:{name:"ischial spine",acc:[],clue:"A pointed posterior projection that separates the two sciatic notches."},
+  isch_tub:{name:"ischial tuberosity",acc:[],clue:"The roughened, thickened inferior mass that bears your weight when sitting."},
+  obturator:{name:"obturator foramen",acc:[],clue:"The large opening below the acetabulum, framed by the pubis and ischium."},
+  brim:{name:"pelvic brim",acc:["linea terminalis","pelvic rim"],clue:"A bony rim you can trace with a finger. It separates the greater (false) pelvis from the lesser (true) pelvis."},
+  inlet:{name:"pelvic inlet",acc:["superior pelvic aperture","pelvic aperture"],clue:"The opening enclosed by that rim. It is a space, not the bone itself."},
+  pubic_arch:{name:"pubic arch / subpubic angle",acc:["pubic arch","subpubic angle","pubic angle","pubic arch subpubic angle"],clue:"The angle formed beneath the joint between the two pubic bones, by the inferior rami."},
+  hyoid:{name:"hyoid",acc:["hyoid bone"],clue:"A U-shaped bone in the neck that does not articulate with any other bone."},
+  ant_arch:{name:"anterior arch",acc:["anterior arch of atlas"],clue:"The shorter of the two bony arcs. It lies in front of the large central opening and carries a small smooth facet on its inner surface."},
+  post_arch:{name:"posterior arch",acc:["posterior arch of atlas"],clue:"The longer arc behind the large central opening. It ends in a small midline bump rather than a true spine."},
+  lat_mass:{name:"lateral mass",acc:["lateral masses","lateral mass of atlas"],clue:"The thick block on each side that carries joint surfaces above and below. It does the weight-bearing job that a body does in other vertebrae."},
+  dens_facet:{name:"facet for dens",acc:["facet for the dens","dental facet","fovea dentis","articular facet for dens"],clue:"A small smooth surface on the inner face of the front arc, where a peg from the bone below pivots."},
+  dens:{name:"dens",acc:["odontoid process","dens of axis","odontoid"],clue:"A tooth-like peg projecting superiorly from the body. It fits behind the front arc of the bone above and acts as a pivot."},
+  cv_tf:{name:"transverse foramen",acc:["transverse foramina","foramen transversarium","transverse foramen of vertebra"],clue:"A small opening through each transverse process. Only vertebrae in the neck have these; the vertebral artery travels through them."},
+  cv_spinous:{name:"bifid spinous process",acc:["spinous process","bifid spinous processes","bifid spine","spinous processes"],clue:"A short posterior midline projection whose tip splits into two."},
+  reg_cerv:{name:"cervical vertebra",acc:["cervical","cervical vertebrae"],clue:"Small body, a hole through each transverse process, and a short spinous process with a split tip."},
+  reg_thor:{name:"thoracic vertebra",acc:["thoracic","thoracic vertebrae"],clue:"Heart-shaped body, smooth surfaces for ribs on the body and transverse processes, and a long spinous process angled steeply downward."},
+  reg_lumb:{name:"lumbar vertebra",acc:["lumbar","lumbar vertebrae"],clue:"Massive, kidney-shaped body; no holes in the transverse processes; no rib facets; a short, blunt, hatchet-shaped spinous process."},
+  tcf:{name:"transverse costal facet",acc:["transverse costal facets","costal facet of transverse process","transverse process facet"],clue:"A smooth surface near the tip of a transverse process, where the tubercle of a rib articulates."},
+  costal_facet:{name:"costal facet",acc:["costal facets","costal demifacet","demifacet","superior costal facet","inferior costal facet"],clue:"A smooth surface on the side of the vertebral body, near the pedicle, where the head of a rib articulates."},
+  // distractors
+  sac_vert:{name:"sacral vertebra",acc:[]}, promontory:{name:"sacral promontory",acc:[]}, sternal_angle:{name:"sternal angle",acc:[]},
+  lesser_sn:{name:"lesser sciatic notch",acc:[]}, pubic_sym:{name:"pubic symphysis",acc:[]}, outlet:{name:"pelvic outlet",acc:[]}
+};
+
+const CONF = [
+  {set:["sup_art_facet","inf_art_facet"],tip:"Superior vs inferior articular facets: check whether the process carrying the smooth surface projects up or down, and which way the surface faces."},
+  {set:["sup_notch","inf_notch"],tip:"Superior vs inferior vertebral notches: compare the shallow concavity above the pedicle with the deeper one below it."},
+  {set:["v_foramen","v_canal","iv_foramen"],tip:"Vertebral foramen vs vertebral canal vs intervertebral foramen: is the opening inside one vertebra, the tunnel through a stack, or a side window between two vertebrae?"},
+  {set:["pedicle","laminae","arch"],tip:"Pedicle vs lamina vs vertebral arch: the pedicle runs back from the body, the lamina runs to the midline, and the arch is the whole posterior ring."},
+  {set:["head","neck","tubercle"],tip:"Head vs neck vs tubercle: start at the posterior end and move laterally. The articulating end comes first, then the narrow segment, then the knob for the transverse process."},
+  {set:["angle","shaft"],tip:"Angle vs shaft: the angle is one specific bend lateral to the tubercle. The shaft is the long curved remainder."},
+  {set:["asis","aiis"],tip:"ASIS vs AIIS: both are anterior. Trace the iliac crest forward. The crest ends at one spine; the other sits lower, just above the acetabulum."},
+  {set:["psis","piis"],tip:"PSIS vs PIIS: trace the crest backward to where it ends. The lower spine sits just above the greater sciatic notch."},
+  {set:["isch_spine","isch_tub"],tip:"Ischial spine vs ischial tuberosity: one is a pointed projection between the sciatic notches; the other is a broad, roughened mass at the bottom."},
+  {set:["brim","inlet"],tip:"Pelvic brim vs pelvic inlet: one is bone you can run a finger along; the other is the space that bone encloses."},
+  {set:["true_ribs","false_ribs","floating_ribs"],tip:"Rib groups: follow the costal cartilage. Does it reach the sternum directly, join the cartilage above, or not reach the sternum at all?"},
+  {set:["rib","costal_cart"],tip:"Rib vs costal cartilage: find where bone ends and the cartilage segment toward the sternum begins."},
+  {set:["jugular","clav_notch"],tip:"Jugular notch vs clavicular notches: one is a single midline dip; the others are paired facets at the corners."},
+  {set:["manubrium","st_body","sternum"],tip:"Manubrium vs body: find the sternal angle. The segment above it is distinct from the long segment below."},
+  {set:["sac_canal","sac_foramina"],tip:"Sacral canal vs sacral foramina: one is a single midline tunnel opening at the base; the others are paired rows of holes."},
+  {set:["gsn","lesser_sn","obturator"],tip:"Notch vs foramen: a notch is an open indentation on the border; a foramen is a hole completely surrounded by bone."},
+  {set:["reg_cerv","reg_thor","reg_lumb"],tip:"Cervical vs thoracic vs lumbar: look for transverse foramina first (cervical only). Then look for rib facets on the body and transverse processes (thoracic only). Neither, with a massive body? Lumbar."},
+  {set:["ant_arch","post_arch"],tip:"Anterior vs posterior arch of the atlas: the anterior arch is shorter and has the facet for the dens on its inner surface. The posterior arch is longer and curves behind the vertebral foramen."},
+  {set:["lat_mass","body"],tip:"The atlas has no body. Its weight is carried by the lateral masses, the thick blocks that hold the superior and inferior articular facets."},
+  {set:["costal_facet","tcf"],tip:"Costal facet vs transverse costal facet: is the smooth surface on the vertebral body (for the head of a rib) or on the tip of the transverse process (for the tubercle of a rib)?"},
+  {set:["cv_tf","v_foramen"],tip:"Transverse foramen vs vertebral foramen: the small paired holes in the transverse processes carry the vertebral arteries. The single large central opening holds the spinal cord."},
+  {set:["dens","dens_facet"],tip:"Dens vs facet for the dens: the dens is the peg that projects up from the axis. The facet is the smooth contact surface for it on the inner side of the atlas's anterior arch."},
+  {set:["ilium","ischium","pubis"],tip:"Ilium vs ischium vs pubis: use the acetabulum as your landmark. Which region lies above it, which behind and below, which in front and below?"}
+];
+
+const SCENES = [
+  {id:"vertebra",k:"1",title:"Typical Vertebra",specimen:"vertebra",build:()=>buildVertebraScene(),view:{az:35,el:52},
+    terms:["body","inf_art_facet","inf_notch","laminae","pedicle","spinous","sup_art_facet","sup_notch","transverse","arch","v_foramen"],distractors:["v_canal","iv_foramen","costal_facet"],
+    desc:"Single typical vertebra"},
+  {id:"adjacent",k:"2",title:"Adjacent Vertebrae",specimen:"pair of vertebrae",build:()=>buildAdjacentScene(),view:{az:62,el:18},
+    terms:["iv_disc","iv_foramen","v_canal"],distractors:["v_foramen","inf_notch","sup_notch"],desc:"Two articulated vertebrae with disc"},
+  {id:"cervical",k:"3",title:"Typical Cervical Vertebra",specimen:"cervical vertebra",build:()=>buildVertebraScene(),view:{az:35,el:40},
+    terms:["body","cv_tf","cv_spinous","transverse","sup_art_facet","inf_art_facet","laminae","pedicle","v_foramen"],distractors:["costal_facet","tcf","dens"],desc:"C3 to C6"},
+  {id:"atlas",k:"4",title:"C1: Atlas",specimen:"atlas",build:()=>buildVertebraScene(),view:{az:30,el:45},
+    terms:["ant_arch","post_arch","lat_mass","sup_art_facet","inf_art_facet","transverse","cv_tf","dens_facet","v_foramen"],distractors:["body","dens","cv_spinous"],desc:"First cervical vertebra"},
+  {id:"axis",k:"5",title:"C2: Axis",specimen:"axis",build:()=>buildVertebraScene(),view:{az:35,el:25},
+    terms:["dens","body","sup_art_facet","inf_art_facet","transverse","cv_tf","laminae","cv_spinous","v_foramen"],distractors:["dens_facet","ant_arch","lat_mass"],desc:"Second cervical vertebra"},
+  {id:"regions",k:"6",title:"Cervical vs Thoracic vs Lumbar",specimen:"set of vertebrae",build:()=>buildVertebraScene(),view:{az:0,el:55},
+    terms:["reg_cerv","reg_thor","reg_lumb","cv_tf","cv_spinous","tcf","costal_facet"],distractors:["sac_vert","transverse","spinous"],desc:"Three vertebrae side by side"},
+  {id:"sacrum",k:"7",title:"Sacrum",specimen:"sacrum",build:()=>buildSacrumScene(),view:{az:150,el:28},
+    terms:["auricular","med_crest","sac_canal","sac_foramina"],distractors:["promontory","v_canal","iv_foramen"],desc:"Isolated sacrum"},
+  {id:"thorax",k:"8",title:"Thoracic Cage",specimen:"thoracic cage",build:()=>buildThoraxScene(),view:{az:28,el:12},
+    terms:["sternum","rib","costal_cart","ic_space","true_ribs","false_ribs","floating_ribs"],distractors:["manubrium","costal_groove"],desc:"Articulated thoracic cage"},
+  {id:"sternum",k:"9",title:"Sternum",specimen:"sternum",build:()=>buildSternumScene(),view:{az:18,el:16},
+    terms:["manubrium","st_body","jugular","clav_notch","xiphoid"],distractors:["sternal_angle","costal_cart"],desc:"Isolated sternum"},
+  {id:"rib",k:"10",title:"Rib",specimen:"rib",build:()=>buildRibScene(),view:{az:60,el:38},
+    terms:["angle","costal_groove","head","neck","shaft","tubercle"],distractors:["costal_cart","costal_facet"],desc:"Isolated typical rib"},
+  {id:"coxal",k:"11",title:"Coxal Bone",specimen:"coxal bone",build:()=>buildCoxalScene(),view:{az:-90,el:8},
+    terms:["acetabulum","ilium","ischium","pubis","iliac_crest","asis","aiis","psis","piis","gsn","isch_spine","isch_tub","obturator"],distractors:["lesser_sn","pubic_sym"],desc:"Isolated os coxae (right, lateral)"},
+  {id:"pelvis",k:"12",title:"Bony Pelvis",specimen:"pelvis",build:()=>buildPelvisScene(),view:{az:12,el:32},
+    terms:["brim","inlet","pubic_arch"],distractors:["outlet","obturator","pubic_sym","promontory"],desc:"Articulated pelvis with lower lumbar spine"},
+  {id:"hyoid",k:"Q",title:"Quick ID: Hyoid",specimen:"bone",build:()=>buildHyoidScene(),view:{az:30,el:30},quick:true,
+    terms:["hyoid"],distractors:[],desc:"One quick recognition item"}
+];
+const NMAIN = SCENES.filter(s=>!s.quick).length;
+
+/* =========================================================
+   GEOMETRY: placeholder schematic models
+   Coordinates: +Y superior, +Z anterior, +X patient's left
+   ========================================================= */
+const V=(x,y,z)=>new THREE.Vector3(x,y,z), V2=(x,y)=>new THREE.Vector2(x,y);
+const MAT = {
+  bone:new THREE.MeshStandardMaterial({color:0xb09a74,roughness:.82,metalness:0,side:THREE.DoubleSide}),
+  artic:new THREE.MeshStandardMaterial({color:0xa58f68,roughness:.45,metalness:0,side:THREE.DoubleSide}),
+  cart:new THREE.MeshStandardMaterial({color:0x6f97a3,roughness:.5,metalness:0,side:THREE.DoubleSide}),
+  disc:new THREE.MeshStandardMaterial({color:0x7d9cb4,roughness:.55,metalness:0,side:THREE.DoubleSide}),
+  dark:new THREE.MeshStandardMaterial({color:0x5a4c3e,roughness:.9,metalness:0,side:THREE.DoubleSide})
+};
+const CAPS = new THREE.CapsuleGeometry(.5,1,6,18);
+const SPH = new THREE.SphereGeometry(1,28,18);
+function strut(a,b,w,h,mat=MAT.bone){
+  a=V(...a); b=V(...b);
+  const d=b.clone().sub(a), len=d.length(); d.normalize();
+  const m=new THREE.Mesh(CAPS,mat);
+  const q1=new THREE.Quaternion().setFromUnitVectors(V(0,1,0),d);
+  const lz=V(0,0,1).applyQuaternion(q1);
+  let up=Math.abs(d.y)>.9?V(0,0,1):V(0,1,0);
+  const des=up.sub(d.clone().multiplyScalar(d.dot(up))).normalize();
+  const ang=Math.atan2(d.dot(new THREE.Vector3().crossVectors(lz,des)),lz.dot(des));
+  const q2=new THREE.Quaternion().setFromAxisAngle(d,ang);
+  m.quaternion.copy(q2.multiply(q1));
+  m.scale.set(w,len/2,h);
+  m.position.copy(a).add(b).multiplyScalar(.5);
+  return m;
+}
+function ell(r,p,s=[1,1,1],mat=MAT.bone){const m=new THREE.Mesh(SPH,mat);m.position.set(...p);m.scale.set(r*s[0],r*s[1],r*s[2]);return m;}
+function keyf(t,k){ if(t<=k[0][0])return k[0][1]; for(let i=1;i<k.length;i++){ if(t<=k[i][0]){const[t0,v0]=k[i-1],[t1,v1]=k[i];const s=(t-t0)/(t1-t0),e=s*s*(3-2*s);return v0+(v1-v0)*e;} } return k[k.length-1][1]; }
+function ribbon(points,A,B,o={}){
+  const curve=new THREE.CatmullRomCurve3(points,false,"centripetal");
+  const N=o.N||90,M=o.M||16,hint=o.hint||V(0,1,0);
+  const fr=t=>{const P=curve.getPointAt(t),T=curve.getTangentAt(t).normalize();
+    let U=hint.clone().sub(T.clone().multiplyScalar(T.dot(hint))); if(U.lengthSq()<1e-4)U=V(1,0,0).sub(T.clone().multiplyScalar(T.x)); U.normalize();
+    const W=new THREE.Vector3().crossVectors(T,U).normalize();
+    return {P,T,U,W,a:typeof A==="function"?A(t):A,b:typeof B==="function"?B(t):B};};
+  const pos=[],idx=[];
+  for(let i=0;i<=N;i++){const f=fr(i/N);for(let j=0;j<M;j++){const th=j/M*Math.PI*2;const p=f.P.clone().addScaledVector(f.U,f.a*Math.cos(th)).addScaledVector(f.W,f.b*Math.sin(th));pos.push(p.x,p.y,p.z);}}
+  for(let i=0;i<N;i++)for(let j=0;j<M;j++){const a=i*M+j,b=i*M+(j+1)%M,c=(i+1)*M+j,d=(i+1)*M+(j+1)%M;idx.push(a,c,b,b,c,d);}
+  const f0=fr(0),f1=fr(1),c0=pos.length/3;pos.push(f0.P.x,f0.P.y,f0.P.z,f1.P.x,f1.P.y,f1.P.z);
+  for(let j=0;j<M;j++){idx.push(c0,(j+1)%M,j);idx.push(c0+1,N*M+j,N*M+(j+1)%M);}
+  const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
+  return {geo:g,curve,fr};
+}
+function extrude(shape,depth,bevel=.04,curve=24){const g=new THREE.ExtrudeGeometry(shape,{depth,bevelEnabled:true,bevelThickness:bevel,bevelSize:bevel,bevelSegments:3,curveSegments:curve});g.translate(0,0,-depth/2);return g;}
+function wpt(obj,arr){let r=obj;while(r.parent)r=r.parent;r.updateMatrixWorld(true);return obj.localToWorld(V(...arr));}
+const T=(term,p,ask)=>({term,p:p.isVector3?p:V(...p),ask});
+
+function makeVertebra(){
+  const g=new THREE.Group();
+  const prof=[V2(0,-.5),V2(1.1,-.5),V2(1.18,-.48)];
+  for(let i=1;i<10;i++){const y=-.5+i/10;prof.push(V2(1.2-.09*Math.cos(Math.PI*y),y));}
+  prof.push(V2(1.18,.48),V2(1.1,.5),V2(0,.5));
+  const body=new THREE.Mesh(new THREE.LatheGeometry(prof,48),MAT.bone);body.position.set(0,0,1.25);g.add(body);
+  for(const s of [1,-1]){
+    g.add(strut([s*.72,.05,.25],[s*.72,.05,-.6],.34,.45));
+    g.add(strut([s*.72,.05,-.55],[s*.1,-.05,-1.45],.2,.62));
+    g.add(strut([s*.7,.12,-.6],[s*2.0,.2,-1.0],.32,.3));
+    g.add(ell(.17,[s*2.0,.2,-1.0]));
+    g.add(strut([s*.78,0,-.7],[s*.8,.75,-.88],.3,.3));
+    g.add(ell(.2,[s*.8,.68,-1.0],[1,1,.25],MAT.artic));
+    g.add(strut([s*.62,-.1,-1.1],[s*.62,-.85,-1.08],.28,.28));
+    g.add(ell(.19,[s*.62,-.72,-.94],[1,1,.25],MAT.artic));
+  }
+  g.add(strut([0,-.05,-1.35],[0,-.75,-2.7],.2,.45));
+  return g;
+}
+function buildVertebraScene(){
+  const g=makeVertebra();
+  return {model:g,tags:[
+    T("body",[.35,.53,1.45]), T("pedicle",[.9,.05,-.15]), T("inf_notch",[.72,-.2,-.1]), T("sup_notch",[-.72,.3,-.1]),
+    T("laminae",[.41,.32,-1.0]), T("arch",[-.66,.34,-.66]), T("spinous",[0,-.2,-2.13]), T("transverse",[-1.61,.33,-.88]),
+    T("sup_art_facet",[.8,.68,-1.06]), T("inf_art_facet",[-.62,-.72,-.89]), T("v_foramen",[0,.05,-.6])]};
+}
+function buildAdjacentScene(){
+  const g=new THREE.Group();const up=makeVertebra();up.position.y=.72;const lo=makeVertebra();lo.position.y=-.72;g.add(up,lo);
+  const prof=[V2(0,-.22),V2(1.12,-.22)];for(let i=0;i<=8;i++){const y=-.22+.44*i/8;prof.push(V2(1.17+.03*Math.cos(Math.PI*(y/.44)),y));}prof.push(V2(1.12,.22),V2(0,.22));
+  const disc=new THREE.Mesh(new THREE.LatheGeometry(prof,48),MAT.disc);disc.position.set(0,0,1.25);g.add(disc);
+  return {model:g,tags:[T("iv_disc",[.59,0,2.3]),T("iv_foramen",[.84,.05,-.25]),T("v_canal",[0,.05,-.6])]};
+}
+function makeSacrum(){
+  const g=new THREE.Group();
+  const s=new THREE.Shape();const P=[[-2.0,1.8],[2.0,1.8],[1.6,.6],[1.0,-.8],[.5,-2.0],[.2,-2.6],[-.2,-2.6],[-.5,-2.0],[-1.0,-.8],[-1.6,.6]];
+  s.moveTo(...P[0]);P.slice(1).forEach(p=>s.lineTo(...p));s.closePath();
+  const geo=new THREE.ExtrudeGeometry(s,{depth:1,bevelEnabled:true,bevelThickness:.06,bevelSize:.06,bevelSegments:3});geo.translate(0,0,-.5);
+  const taper=y=>.55+.45*(y+2.6)/4.4, bend=y=>.1*(y+.4)*(y+.4)-.2;
+  const pa=geo.attributes.position;for(let i=0;i<pa.count;i++){const y=pa.getY(i);pa.setZ(i,pa.getZ(i)*taper(y)+bend(y));}
+  geo.computeVertexNormals();g.add(new THREE.Mesh(geo,MAT.bone));
+  const zp=y=>-.56*taper(y)+bend(y), za=y=>.56*taper(y)+bend(y);
+  [1.25,.6,-.05,-.7].forEach(y=>g.add(ell(1,[0,y,zp(y)-.06],[.13,.2,.16])));
+  g.add(strut([0,1.45,zp(1.45)-.02],[0,-.95,zp(-.95)-.02],.12,.12));
+  const fg=new THREE.CylinderGeometry(.16,.16,.05,20);
+  [[.85,1.0],[.75,.25],[.6,-.5],[.45,-1.2]].forEach(([x,y])=>{for(const sx of[1,-1])for(const side of[0,1]){const m=new THREE.Mesh(fg,MAT.dark);m.rotation.x=Math.PI/2;m.position.set(sx*x,y,side?za(y):zp(y));g.add(m);}});
+  const canal=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,.04,28),MAT.dark);canal.scale.set(1.25,1,.6);canal.position.set(0,1.865,zp(1.8)+.34);g.add(canal);
+  for(const sx of[1,-1]){g.add(strut([sx*.78,1.75,zp(1.8)+.2],[sx*.85,2.2,zp(1.8)+.05],.3,.3));
+    const au=ell(1,[sx*1.8,1.2,bend(1.2)],[.1,.55,.32],MAT.artic);au.rotation.z=-sx*.32;g.add(au);}
+  return {g,zp,za,bend};
+}
+function buildSacrumScene(){
+  const {g,zp,bend}=makeSacrum();
+  return {model:g,tags:[T("auricular",[1.91,1.22,bend(1.22)]),T("med_crest",[0,.6,zp(.6)-.22]),T("sac_canal",[0,1.9,zp(1.8)+.34]),T("sac_foramina",[.75,.25,zp(.25)-.04])]};
+}
+function makeSternum(){
+  const g=new THREE.Group();
+  const m=new THREE.Shape();m.moveTo(-.38,3.0);m.quadraticCurveTo(0,2.7,.38,3.0);m.lineTo(.56,3.0);m.quadraticCurveTo(.6,2.72,.92,2.62);m.lineTo(.86,2.3);m.lineTo(.56,1.98);m.lineTo(-.56,1.98);m.lineTo(-.86,2.3);m.lineTo(-.92,2.62);m.quadraticCurveTo(-.6,2.72,-.56,3.0);m.closePath();
+  const b=new THREE.Shape();[[-.55,1.92],[.55,1.92],[.63,1.2],[.7,.5],[.62,-.1],[.38,-.45],[-.38,-.45],[-.62,-.1],[-.7,.5],[-.63,1.2]].forEach((p,i)=>i?b.lineTo(...p):b.moveTo(...p));b.closePath();
+  const x=new THREE.Shape();[[-.28,-.52],[.28,-.52],[.14,-1.0],[0,-1.25],[-.14,-1.0]].forEach((p,i)=>i?x.lineTo(...p):x.moveTo(...p));x.closePath();
+  g.add(new THREE.Mesh(extrude(m,.3),MAT.bone),new THREE.Mesh(extrude(b,.26),MAT.bone),new THREE.Mesh(extrude(x,.14),MAT.cart));
+  return g;
+}
+function buildSternumScene(){
+  const g=makeSternum();
+  return {model:g,tags:[T("manubrium",[.25,2.45,.19]),T("st_body",[0,.75,.17]),T("jugular",[0,2.88,.1]),T("clav_notch",[.69,2.79,.1]),T("xiphoid",[0,-.95,.11])]};
+}
+function buildThoraxScene(){
+  const g=new THREE.Group();
+  const W=[.55,.72,.84,.93,.99,1.02,1.03,1.01,.97,.9,.75,.6], D=[.8,.88,.94,.98,1,1,1,.98,.95,.9,.75,.6];
+  const yPost=i=>4.0-(i-1)*.5, drop=i=>.9+.05*i, a0=.28;
+  const rp=(i,s,al)=>{const A=2.4*W[i-1],B=1.8*D[i-1],zc=-1.6+B*Math.cos(a0);return V(s*A*Math.sin(al),yPost(i)-drop(i)*(al/Math.PI),zc-B*Math.cos(al));};
+  for(let i=1;i<=12;i++){const y=yPost(i)-.05;const c=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,.36,24),MAT.bone);c.position.set(0,y,-1.95);g.add(c);
+    g.add(strut([0,y,-2.25],[0,y-.35,-2.75],.14,.22));for(const s of[1,-1])g.add(strut([s*.25,y+.05,-2.15],[s*.8,y+.08,-2.25],.18,.18));}
+  const st=makeSternum();st.scale.setScalar(.82);st.position.set(0,.99,1.72);st.rotation.x=-.12;g.add(st);
+  const yStern=[3.2,2.6,2.15,1.75,1.35,1.0,.7];
+  const att=(i,s)=>wpt(st,[s*.62,(yStern[i-1]-.99)/.82,-.05]);
+  const end={1:2.2,2:2.2,3:2.2,4:2.2,5:2.2,6:2.2,7:2.2,8:2.25,9:2.25,10:2.25,11:1.65,12:1.3};
+  const carts={1:{},[-1]:{}};
+  const pts={};
+  for(const s of[1,-1])for(let i=1;i<=12;i++){
+    const al=[];for(let k=0;k<=10;k++)al.push(a0+(end[i]-a0)*k/10);
+    const rb=ribbon(al.map(a=>rp(i,s,a)),.15,.05,{N:60,M:12});g.add(new THREE.Mesh(rb.geo,MAT.bone));
+    const e=rp(i,s,end[i]);let curve=null;
+    if(i<=7){const t=att(i,s),c=rp(i,s,2.6);c.y=(e.y+t.y)/2;curve=new THREE.QuadraticBezierCurve3(e,c,t);}
+    else if(i<=10){const t=carts[s][i-1].getPoint(.35),c=e.clone().lerp(t,.5);c.x+=s*.25;c.z+=.15;curve=new THREE.QuadraticBezierCurve3(e,c,t);}
+    else g.add(ell(.08,[e.x,e.y,e.z],[1,1,1],MAT.cart));
+    if(curve){carts[s][i]=curve;g.add(new THREE.Mesh(new THREE.TubeGeometry(curve,24,.085,10),MAT.cart));}
+  }
+  const out=(i,s,a,d=.07)=>{const p=rp(i,s,a);return p.add(V(s*Math.sin(a),0,-Math.cos(a)).multiplyScalar(d));};
+  const ic=rp(5,-1,1.45).add(rp(6,-1,1.45)).multiplyScalar(.5).add(V(-.05,0,0));
+  const cc=carts[-1][3].getPoint(.5).add(V(0,0,.09));
+  return {model:g,tags:[T("sternum",wpt(st,[0,.8,.2])),T("rib",out(4,1,1.55),"Bone"),T("costal_cart",cc),T("ic_space",ic),
+    T("true_ribs",out(2,-1,1.3),"Rib group"),T("false_ribs",out(9,1,1.7),"Rib group"),T("floating_ribs",out(11,-1,1.35),"Rib group")]};
+}
+function buildRibScene(){
+  const g=new THREE.Group();
+  const pts=[V(.2,.15,-2.0),V(.6,.13,-2.18),V(1.0,.12,-2.3),V(1.6,.08,-2.25),V(2.3,-.05,-1.7),V(2.85,-.35,-.5),V(2.8,-.65,.7),V(2.3,-.9,1.6),V(1.7,-1.0,2.1)];
+  const A=t=>keyf(t,[[0,.15],[.05,.09],[.12,.09],[.17,.13],[.3,.2],[.9,.2],[1,.17]]);
+  const B=t=>keyf(t,[[0,.11],[.05,.08],[.17,.09],[.3,.055],[1,.05]]);
+  const rb=ribbon(pts,A,B,{N:140,M:18});g.add(new THREE.Mesh(rb.geo,MAT.bone));
+  const f0=rb.fr(0);g.add(ell(.19,f0.P.clone().addScaledVector(f0.T,-.06).toArray(),[1.05,1.1,.95]));
+  const near=p=>{let bt=0,bd=1e9;for(let i=0;i<=400;i++){const d=rb.curve.getPointAt(i/400).distanceTo(p);if(d<bd){bd=d;bt=i/400;}}return bt;};
+  const tTub=near(V(1.0,.12,-2.3)),fT=rb.fr(tTub);const tub=fT.P.clone().add(V(0,.02,-.12));g.add(ell(.13,tub.toArray()));
+  const inward=f=>{const toC=V(0,f.P.y,0).sub(f.P);return f.W.dot(toC)>0?f.W.clone():f.W.clone().negate();};
+  const gp=[];for(let t=.3;t<=.93;t+=.035){const f=rb.fr(t);gp.push(f.P.clone().addScaledVector(f.U,-f.a*.55).addScaledVector(inward(f),f.b*.95));}
+  const groove=new THREE.CatmullRomCurve3(gp);g.add(new THREE.Mesh(new THREE.TubeGeometry(groove,60,.028,8),MAT.dark));
+  const fN=rb.fr(.09),tAng=near(V(1.65,.07,-2.24)),fA=rb.fr(tAng),fS=rb.fr(.62);
+  return {model:g,tags:[T("head",f0.P.clone().addScaledVector(f0.T,-.27)),T("neck",fN.P.clone().addScaledVector(fN.U,fN.a+.01)),
+    T("tubercle",tub.clone().add(V(0,0,-.13))),T("angle",fA.P.clone().addScaledVector(fA.U,fA.a+.01)),
+    T("shaft",fS.P.clone().addScaledVector(inward(fS).negate(),fS.b+.01)),T("costal_groove",groove.getPointAt(.55))]};
+}
+function makeCoxal(){
+  const g=new THREE.Group();const s=new THREE.Shape();
+  s.moveTo(-2.6,1.6);s.splineThru([V2(-2.3,2.4),V2(-1.2,3.0),V2(.3,3.1),V2(1.4,2.6),V2(2.0,1.9)]);
+  [[1.72,1.35],[1.9,.9],[1.45,.35],[1.6,.1],[2.6,-.55],[3.05,-.85],[3.1,-1.9],[2.3,-2.3],[1.1,-2.7],[.4,-3.0],[-.3,-2.95],[-.5,-2.6],[-.75,-2.0],[-.6,-1.5],[-1.5,-1.05],[-.95,-.85],[-.65,-.4],[-.75,.2],[-1.3,.65],[-2.0,.9],[-2.4,1.0],[-2.25,1.3]].forEach(p=>s.lineTo(...p));
+  s.closePath();
+  const ob=new THREE.Path();ob.absellipse(1.6,-1.75,.62,.4,0,Math.PI*2,true,-.3);s.holes.push(ob);
+  const ac=new THREE.Path();ac.absarc(.6,-.4,.74,0,Math.PI*2,true);s.holes.push(ac);
+  const geo=new THREE.ExtrudeGeometry(s,{depth:.45,bevelEnabled:true,bevelThickness:.08,bevelSize:.07,bevelSegments:3,curveSegments:32});
+  g.add(new THREE.Mesh(geo,MAT.bone));
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(.79,.12,12,56),MAT.bone);rim.position.set(.6,-.4,.53);g.add(rim);
+  const cup=new THREE.Mesh(new THREE.SphereGeometry(.76,36,16,0,Math.PI*2,0,Math.PI/2),MAT.artic);cup.scale.set(1,.6,1);cup.rotation.x=-Math.PI/2;cup.position.set(.6,-.4,.55);g.add(cup);
+  const crest=[[-2.6,1.6],[-2.3,2.4],[-1.2,3.0],[.3,3.1],[1.4,2.6],[2.0,1.9]].map(([x,y])=>V(x,y,.225));
+  g.add(new THREE.Mesh(ribbon(crest,.3,.09,{hint:V(0,0,1),N:70}).geo,MAT.bone));
+  g.add(ell(.15,[2.0,1.9,.225],[1,1,1.5]),ell(.12,[1.9,.9,.225],[1,1,1.4]),ell(.14,[-2.6,1.6,.225],[1,1,1.5]),ell(.11,[-2.4,1.0,.225],[1,1,1.4]),ell(1,[.05,-2.75,.225],[.6,.38,.42]));
+  g.add(strut([-1.1,-.98,.225],[-1.62,-1.08,.225],.16,.16));
+  return g;
+}
+function buildCoxalScene(){
+  const model=new THREE.Group();const c=makeCoxal();c.rotation.y=-Math.PI/2;model.add(c);
+  const P=a=>wpt(c,a);
+  return {model,tags:[T("acetabulum",P([.6,-.4,.3])),T("ilium",P([0,1.9,.53])),T("ischium",P([-.15,-1.75,.53])),T("pubis",P([2.7,-1.3,.53])),
+    T("iliac_crest",P([.3,3.2,.32])),T("asis",P([2.14,1.95,.3])),T("aiis",P([2.02,.9,.3])),T("psis",P([-2.73,1.62,.3])),T("piis",P([-2.51,.98,.3])),
+    T("gsn",P([-.86,.2,.225])),T("isch_spine",P([-1.68,-1.09,.225])),T("isch_tub",P([.05,-3.1,.35])),T("obturator",P([1.6,-1.75,.22]))]};
+}
+function buildPelvisScene(){
+  const model=new THREE.Group();const phi=.36;
+  const side=(mirror)=>{const holder=new THREE.Group();const rot=new THREE.Group();const c=makeCoxal();c.rotation.y=-Math.PI/2;rot.add(c);rot.rotation.y=phi;rot.position.x=-1.19;holder.add(rot);if(mirror)holder.scale.x=-1;model.add(holder);return c;};
+  const right=side(false);side(true);
+  const sac=makeSacrum();sac.g.scale.setScalar(.95);sac.g.position.set(0,-.05,-2.15);sac.g.rotation.x=.3;model.add(sac.g);
+  return {model,tags:[T("brim",wpt(right,[.4,.5,-.12])),T("inlet",[0,.45,.8]),T("pubic_arch",[0,-2.3,2.55])]};
+}
+function buildHyoidScene(){
+  const g=new THREE.Group();const t=new THREE.Mesh(new THREE.TorusGeometry(1,.13,14,48,Math.PI),MAT.bone);t.rotation.x=Math.PI/2;g.add(t);
+  g.add(ell(1,[0,0,1.0],[.5,.26,.17]));
+  for(const s of[1,-1]){g.add(strut([s*1,0,0],[s*1.18,.12,-.85],.16,.12));g.add(ell(.11,[s*1.18,.12,-.88]));g.add(strut([s*.42,.05,.92],[s*.5,.32,.82],.08,.08));}
+  return {model:g,tags:[T("hyoid",[0,.02,1.18])]};
+}
+
+/* =========================================================
+   STATE
+   ========================================================= */
+// Attempt state exists only in this page's memory. Never restore previous sessions.
+let ST={name:"",email:"",cur:0,sc:{}};
+function save(){AttemptLog.save();}
+function logEvent(type,details={}){AttemptLog.event(type,SCENES[ST.cur]?.id,details);}
+document.getElementById("retryLog").onclick=()=>AttemptLog.flush();
+function scs(id){return ST.sc[id]||(ST.sc[id]={phase:null,order:null,ans:{},st:{},miss:{},clue:{},checks:[],pr:null,prove:null,snap:null});}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const isDone=id=>{const s=ST.sc[id];return !!(s&&s.phase==="done");};
+const isStarted=id=>{const s=ST.sc[id];return !!(s&&s.phase&&(s.checks.length||s.phase!=="label"||Object.keys(s.ans).length));};
+
+/* =========================================================
+   RUNTIME MODELS (placeholder or loaded)
+   ========================================================= */
+const RT={}; let OVR={}; const AUTH={on:false,place:false,show:true};
+function rtFromBuild(sc){const b=sc.build();return {model:b.model,tags:b.tags,orient:[0,0,0],view:{...sc.view},file:null,custom:false};}
+async function ensureRT(i){
+  const sc=SCENES[i];if(RT[sc.id])return RT[sc.id];
+  const o=OVR[sc.id];let rt=null;
+  if(o&&o.model){try{const res=await fetch(o.model);let buf;if(/\.b64\.txt$/i.test(o.model)){const bin=atob((await res.text()).trim());const u=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)u[k]=bin.charCodeAt(k);buf=u.buffer;}else buf=await res.arrayBuffer();const model=await parseModel(buf,o.model.replace(/\.b64\.txt$/i,""));rt={model,tags:[],orient:[0,0,0],view:{...sc.view},file:o.model,custom:true};}catch(e){console.warn("Model load failed, using placeholder",o.model,e);}}
+  if(!rt)rt=rtFromBuild(sc);
+  if(o)applyOverride(rt,o,!rt.custom&&!!o.model);
+  RT[sc.id]=rt;return rt;
+}
+function applyOverride(rt,o,skipTags){
+  if(o.orient)rt.orient=o.orient.slice();if(o.view)rt.view={...o.view};
+  if(o.tags&&!skipTags)rt.tags=o.tags.map(t=>T(t.term,t.p,t.ask));
+}
+function parseModel(buf,name){
+  return new Promise((res,rej)=>{
+    if(/\.stl$/i.test(name)){try{const geo=new THREE.STLLoader().parse(buf);geo.computeVertexNormals();const m=new THREE.Mesh(geo,MAT.bone);const g=new THREE.Group();g.add(m);res(g);}catch(e){rej(e);}}
+    else new THREE.GLTFLoader().parse(buf,"",gl=>{const g=new THREE.Group();g.add(gl.scene);gl.scene.traverse(o=>{if(o.isMesh&&(!o.material||!o.material.map)){const n=(o.name||(o.parent&&o.parent.name)||"").toLowerCase();o.material=n.startsWith("cart")?MAT.cart:n.startsWith("disc")?MAT.disc:MAT.bone;if(!o.geometry.attributes.normal)o.geometry.computeVertexNormals();}});res(g);},rej);
+  });
+}
+
+/* =========================================================
+   3D STAGE
+   ========================================================= */
+const stage=document.getElementById("stage"),glc=document.getElementById("gl"),overlay=document.getElementById("overlay"),gizmo=document.getElementById("gizmo");
+const renderer=new THREE.WebGLRenderer({canvas:glc,antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.outputEncoding=THREE.sRGBEncoding;
+const scene3=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(35,1,.05,200);
+const controls=new THREE.OrbitControls(camera,glc);
+controls.enableDamping=true;controls.dampingFactor=.12;controls.screenSpacePanning=true;controls.minDistance=2;controls.maxDistance=40;controls.rotateSpeed=.9;
+scene3.add(new THREE.HemisphereLight(0xffffff,0x3a332b,.55));
+const key=new THREE.DirectionalLight(0xffffff,1.05);const fill=new THREE.DirectionalLight(0xdfe8ff,.28);scene3.add(key,fill);
+const root=new THREE.Group();scene3.add(root);const markers=new THREE.Group();scene3.add(markers);
+const markerGeo=new THREE.SphereGeometry(.055,16,12);
+const markerMat=new THREE.MeshBasicMaterial({color:0xd9480f});
+let curRT=null,holder=null;
+function stageColors(){const cs=getComputedStyle(document.documentElement);renderer.setClearColor(new THREE.Color(cs.getPropertyValue("--stage").trim()||"#d9e1e3"));markerMat.color.set(cs.getPropertyValue("--pin").trim()||"#d9480f");}
+stageColors();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{stageColors();});
+new MutationObserver(stageColors).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+function mountRT(rt){
+  while(root.children.length)root.remove(root.children[0]);
+  holder=new THREE.Group();holder.add(rt.model);root.add(holder);curRT=rt;
+  rt.model.rotation.set(rt.orient[0]*Math.PI/2,rt.orient[1]*Math.PI/2,rt.orient[2]*Math.PI/2);
+  normalize();
+}
+function normalize(){
+  holder.position.set(0,0,0);holder.scale.set(1,1,1);holder.updateMatrixWorld(true);
+  const box=new THREE.Box3().setFromObject(curRT.model);const sp=box.getBoundingSphere(new THREE.Sphere());
+  const s=3/(sp.radius||1);holder.scale.setScalar(s);holder.position.copy(sp.center).multiplyScalar(-s);holder.updateMatrixWorld(true);
+}
+function fitDist(){const a=camera.aspect||1;let d=3/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*1.02;if(a<1)d/=Math.max(a,.55);return d;}
+function setView(v,keepDist){
+  const az=THREE.MathUtils.degToRad(v.az),el=THREE.MathUtils.degToRad(Math.max(-80,Math.min(80,v.el)));
+  const d=keepDist?camera.position.distanceTo(controls.target):fitDist();
+  controls.target.set(0,0,0);camera.position.set(Math.sin(az)*Math.cos(el)*d,Math.sin(el)*d,Math.cos(az)*Math.cos(el)*d);camera.up.set(0,1,0);camera.lookAt(0,0,0);controls.update();occDirty=true;
+}
+function currentView(){const p=camera.position.clone().sub(controls.target).normalize();return {az:Math.round(THREE.MathUtils.radToDeg(Math.atan2(p.x,p.z))),el:Math.round(THREE.MathUtils.radToDeg(Math.asin(p.y)))};}
+function recenter(){const dir=camera.position.clone().sub(controls.target).normalize();controls.target.set(0,0,0);camera.position.copy(dir.multiplyScalar(fitDist()));controls.update();occDirty=true;}
+function resize(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();occDirty=true;}
+new ResizeObserver(resize).observe(stage);
+
+/* pins (HTML labels) */
+let PINS=[];let occDirty=true,lastOcc=0;const ray=new THREE.Raycaster();
+controls.addEventListener("change",()=>{occDirty=true;});
+function tagWorld(i){return curRT.model.localToWorld(curRT.tags[i].p.clone());}
+function buildPins(){
+  overlay.innerHTML="";while(markers.children.length)markers.remove(markers.children[0]);PINS=[];
+  if(!curRT)return;
+  for(const v of visibleTags()){
+    const b=document.createElement("button");b.className="pin "+(v.cls||"");b.type="button";b.setAttribute("aria-label",v.aria||("Tag "+v.label));
+    b.innerHTML=`<span class="tg"><span>${v.label}</span>${v.name?`<span class="nm">${esc(v.name)}</span>`:""}</span><span class="stem"></span>`;
+    b.addEventListener("click",e=>{e.stopPropagation();pinClick(v.i);});
+    overlay.appendChild(b);
+    const mk=new THREE.Mesh(markerGeo,markerMat);markers.add(mk);
+    PINS.push({i:v.i,el:b,mk,label:v.label,name:v.name,x:0,y:0,occ:false,vis:true});
+  }
+  occDirty=true;
+}
+function updatePins(now){
+  if(!curRT)return;const r=stage.getBoundingClientRect();
+  const doOcc=occDirty&&now-lastOcc>90;if(doOcc){lastOcc=now;occDirty=false;}
+  for(const p of PINS){
+    const w=tagWorld(p.i);p.mk.position.copy(w);
+    const s=w.clone().project(camera);
+    if(s.z>1||s.z<-1){p.el.style.display="none";p.vis=false;continue;}
+    p.el.style.display="";p.vis=true;
+    p.x=(s.x+1)/2*r.width;p.y=(1-s.y)/2*r.height;
+    p.el.style.transform=`translate(${p.x}px,${p.y-6}px) translate(-50%,-100%)`;
+    if(doOcc){const dir=w.clone().sub(camera.position);const dist=dir.length();ray.set(camera.position,dir.normalize());ray.far=dist;const hit=ray.intersectObject(curRT.model,true)[0];p.occ=!!(hit&&hit.distance<dist-.1);p.el.classList.toggle("occ",p.occ);}
+  }
+}
+function drawGizmo(){
+  const ctx=gizmo.getContext("2d"),W=gizmo.width,H=gizmo.height,c=W/2,R=W*.33;ctx.clearRect(0,0,W,H);
+  const cs=getComputedStyle(document.documentElement);const ink=cs.getPropertyValue("--ink").trim(),mut=cs.getPropertyValue("--muted").trim(),acc=cs.getPropertyValue("--accent").trim(),pan=cs.getPropertyValue("--panel").trim(),pin=cs.getPropertyValue("--pin").trim();
+  ctx.fillStyle=pan;ctx.globalAlpha=.78;ctx.beginPath();ctx.arc(c,c,W*.48,0,7);ctx.fill();ctx.globalAlpha=1;
+  const q=camera.quaternion.clone().invert();
+  const ax=[[V(0,1,0),"S",acc],[V(0,-1,0),"I",mut],[V(0,0,1),"A",pin],[V(0,0,-1),"P",mut],[V(1,0,0),"L",ink],[V(-1,0,0),"R",mut]].map(([v,l,col])=>{const t=v.applyQuaternion(q);return {x:c+t.x*R,y:c-t.y*R,z:t.z,l,col,pos:"SAL".includes(l)};}).sort((a,b)=>a.z-b.z);
+  for(const a of ax){ctx.globalAlpha=a.z<-.2?.45:1;if(a.pos){ctx.strokeStyle=a.col;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(c,c);ctx.lineTo(a.x,a.y);ctx.stroke();}
+    ctx.fillStyle=a.pos?a.col:pan;ctx.strokeStyle=a.col;ctx.lineWidth=3;ctx.beginPath();ctx.arc(a.x,a.y,a.pos?19:16,0,7);ctx.fill();ctx.stroke();
+    ctx.fillStyle=a.pos?pan:a.col;ctx.font="600 20px 'IBM Plex Mono',monospace";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(a.l,a.x,a.y+1);}
+  ctx.globalAlpha=1;
+}
+function loop(now){requestAnimationFrame(loop);if(document.getElementById("lab").hidden)return;controls.update();
+  {const dd=camera.position.length();key.position.copy(camera.position).add(V(-.55,.8,.1).applyQuaternion(camera.quaternion).multiplyScalar(dd*.9));}fill.position.copy(camera.position).multiplyScalar(-1).add(V(0,-3,0));
+  renderer.render(scene3,camera);updatePins(now);drawGizmo();}
+requestAnimationFrame(loop);
+
+/* author click-to-place */
+let downXY=null;
+glc.addEventListener("pointerdown",e=>{downXY=[e.clientX,e.clientY];});
+glc.addEventListener("pointerup",e=>{
+  if(!downXY||!AUTH.on||!AUTH.place||!curRT)return;const dx=e.clientX-downXY[0],dy=e.clientY-downXY[1];downXY=null;if(dx*dx+dy*dy>25)return;
+  const r=glc.getBoundingClientRect();const ndc=V2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);
+  ray.setFromCamera(ndc,camera);ray.far=Infinity;const hit=ray.intersectObject(curRT.model,true)[0];if(!hit)return toast("Click directly on the model surface.");
+  const local=curRT.model.worldToLocal(hit.point.clone());const sc=SCENES[ST.cur];
+  const used=new Set(curRT.tags.map(t=>t.term));const term=sc.terms.find(t=>!used.has(t))||sc.terms[0];
+  curRT.tags.push(T(term,local));tagsChanged();
+});
+
+/* =========================================================
+   FLOW
+   ========================================================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let selTag=null;
+const SC=()=>SCENES[ST.cur], S=()=>scs(SC().id);
+const termName=id=>(TERMS[id]||{name:id}).name;
+const bankFor=sc=>[...new Set([...sc.terms,...sc.distractors])].sort((a,b)=>termName(a).localeCompare(termName(b)));
+const LET="ABCDEFGHIJ";
+
+function ensureOrder(s){const n=curRT.tags.length;if(!s.order||s.order.length!==n)s.order=shuffle([...Array(n).keys()]);}
+function numOf(s,i){return s.order.indexOf(i)+1;}
+
+function visibleTags(){
+  const s=S(),sc=SC(),out=[];if(!curRT)return out;
+  if(AUTH.on&&AUTH.show){curRT.tags.forEach((t,i)=>out.push({i,label:String(i+1),name:termName(t.term)}));return out;}
+  if(s.phase==="label"){ensureOrder(s);s.order.forEach((i,k)=>{const st=s.st[i];out.push({i,label:String(k+1),cls:(st==="locked"?"ok":st==="wrong"?"bad":"")+(selTag===i?" sel":"")});});}
+  else if(s.phase==="practical"){s.pr.items.forEach((i,k)=>out.push({i,label:sc.quick?"?":LET[k],cls:s.pr.st[i]==="ok"?"ok":s.pr.st[i]==="wrong"?"bad":""}));}
+  else if(s.phase==="prove"){s.prove.forEach(p=>out.push({i:p.i,label:String(numOf(s,p.i)),name:termName(curRT.tags[p.i].term),cls:"ok"}));}
+  else if(s.phase==="done"){ensureOrder(s);s.order.forEach((i,k)=>out.push({i,label:sc.quick?"✓":String(k+1),name:termName(curRT.tags[i].term),cls:"ok"}));}
+  return out;
+}
+function pinClick(i){
+  const s=S();
+  if(s.phase==="label"){selectTag(i);}
+  else if(s.phase==="practical"){const el=document.getElementById("pc-"+i);if(el&&!el.disabled)el.focus();}
+}
+function selectTag(i){selTag=i;const s=S();if(s.st[i]==="locked"){selTag=null;}renderRight();buildPins();
+  if(selTag!==null){const el=document.getElementById("ans-"+i);if(el){el.focus({preventScroll:true});el.closest(".row").scrollIntoView({block:"nearest"});}}}
+
+async function gotoScene(i){
+  ST.cur=i;save();selTag=null;showLab();
+  const sc=SCENES[i];$("#loading").hidden=false;
+  const rt=await ensureRT(i);$("#loading").hidden=true;
+  mountRT(rt);resize();
+  const s=scs(sc.id);
+  if(!s.phase){s.phase=sc.quick?"practical":"label";}
+  ensureOrder(s);
+  if(s.phase==="practical"&&!s.pr)initPractical(s);
+  if(s.phase==="practical")setView(s.pr.view);else setView(s.lastView||rt.view);
+  if(!s.msg)s.msg=sc.quick?{t:"",m:["Quick ID: no word bank. Rotate the specimen and type the name of the tagged bone."]}:{t:"",m:[`Rotate the ${sc.specimen}, select a numbered tag, and assign a term from the bank. Terms can be used more than once, and some terms are not used.`]};
+  save();renderAll();
+  if(s.phase==="done"&&!s.snap){const fid=sc.id;requestAnimationFrame(()=>requestAnimationFrame(()=>{if(SC().id===fid&&RT[fid]===curRT){capture();renderRight();}}));}
+}
+function renderAll(){renderStepper();renderLeft();renderRight();renderToolbar();buildPins();renderAuthor();
+  const sc=SC(),s=S();$("#stageTitle").textContent=(sc.quick?"":`Scene ${sc.k} of ${NMAIN} · `)+sc.title;
+  const ph=$("#phaseTag");const P={label:"Labeling",practical:sc.quick?"Quick ID":"Practical Check",prove:"Prove it",done:"Complete"};ph.textContent=AUTH.on?"Authoring":P[s.phase];ph.className="phase "+(s.phase==="practical"?"practical":s.phase==="done"?"done":"");}
+function showLab(){$("#landing").hidden=true;$("#final").hidden=true;$("#lab").hidden=false;$("#stepper").hidden=false;$("#who").hidden=false;$("#whoName").textContent=ST.name||"(instructor preview)";}
+
+function renderStepper(){
+  const nav=$("#stepper");nav.innerHTML="";
+  SCENES.forEach((sc,i)=>{const b=document.createElement("button");b.className="chip"+(i===ST.cur&&!$("#lab").hidden?" cur":"")+(isDone(sc.id)?" done":isStarted(sc.id)?" prog":"");b.textContent=sc.k;b.title=sc.title;b.setAttribute("aria-label",sc.title+(isDone(sc.id)?", complete":""));b.onclick=()=>gotoScene(i);nav.appendChild(b);});
+}
+function renderLeft(){
+  const sc=SC(),s=S(),L=$("#left");let h="";
+  if(s.phase==="label"&&!AUTH.on){
+    h+=`<div><div class="lbl">Structure bank</div><p class="note">Select a tag on the model, then choose a term. Terms can be reused, and some are not used.</p><div class="bank">${bankFor(sc).map(t=>`<button class="term" data-t="${t}">${esc(termName(t))}</button>`).join("")}</div></div>`;
+  } else if(s.phase==="practical"||s.phase==="prove"){
+    h+=`<div><div class="lbl">Structure bank</div><p class="note">${s.phase==="practical"?"The word bank is off for this check, just like the real practical. Type each name from memory.":"Explain your reasoning in your own words."}</p></div>`;
+  } else if(s.phase==="done"){
+    h+=`<div><div class="lbl">Structures in this scene</div><ul class="mini">${s.order.map((i,k)=>`<li><span class="k">${sc.quick?"":k+1}</span>${esc(termName(curRT.tags[i].term))}</li>`).join("")}</ul></div>`;
+  }
+  const n=curRT?curRT.tags.length:0,locked=Object.values(s.st).filter(x=>x==="locked").length;
+  const pct=s.phase==="label"?Math.round(locked/Math.max(1,n)*60):s.phase==="practical"?70:s.phase==="prove"?88:100;
+  h+=`<div><div class="lbl">This scene</div><p class="note" style="color:var(--ink)">${s.phase==="label"?`${locked} of ${n} tags locked in`:s.phase==="practical"?(sc.quick?"Quick ID":"Practical Check in progress"):s.phase==="prove"?"Prove it":"Complete"}</p><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+  h+=`<div><div class="lbl">All scenes</div><ul class="mini">${SCENES.map((x,i)=>`<li class="${i===ST.cur?"cur":""}" data-go="${i}"><span class="dot ${isDone(x.id)?"done":isStarted(x.id)?"prog":""}"></span><span class="k">${x.k}</span>${esc(x.title.replace("Quick ID: ",""))}</li>`).join("")}</ul></div>`;
+  L.innerHTML=h;
+  L.querySelectorAll(".term").forEach(b=>b.onclick=()=>bankPick(b.dataset.t));
+  L.querySelectorAll("[data-go]").forEach(li=>li.onclick=()=>gotoScene(+li.dataset.go));
+}
+function bankPick(t){
+  const s=S();if(selTag===null){toast("Select a numbered tag first, on the model or in Your answers.");return;}
+  if(s.st[selTag]==="locked")return;
+  s.ans[selTag]=t;if(s.st[selTag]==="wrong")s.st[selTag]="";
+  const next=s.order.find(i=>s.st[i]!=="locked"&&!s.ans[i]);selTag=next===undefined?null:next;
+  save();renderRight();renderToolbar();buildPins();
+  if(selTag!==null){const el=document.getElementById("ans-"+selTag);if(el)el.closest(".row").scrollIntoView({block:"nearest"});}
+}
+
+function fbHTML(s){if(!s.msg)return"";return `<div class="fb ${s.msg.t||""}" role="status">${s.msg.m.map(x=>`<p class="${x.startsWith("•")?"tip":""}">${esc(x)}</p>`).join("")}</div>`;}
+function renderRight(){
+  const sc=SC(),s=S(),R=$("#right");let h=fbHTML(s);
+  if(AUTH.on){R.innerHTML=h+`<p class="note">Authoring mode is on. Close the authoring panel to return to the student view.</p>`;return;}
+  if(s.phase==="label"){
+    const bank=bankFor(sc);
+    h+=`<div><div class="lbl">Your answers</div><ol class="answers">${s.order.map((i,k)=>{const st=s.st[i]||"",tag=curRT.tags[i],miss=s.miss[i]||0;
+      return `<li class="row ${st==="locked"?"locked":st==="wrong"?"wrong":""} ${selTag===i?"sel":""}" data-i="${i}">
+        ${tag.ask?`<span></span><p class="ask">${esc(tag.ask)}</p>`:""}
+        <button class="num" data-sel="${i}" aria-label="Select tag ${k+1}">${k+1}</button>
+        <select id="ans-${i}" data-i="${i}" ${st==="locked"?"disabled":""} aria-label="Answer for tag ${k+1}"><option value="">Choose a term</option>${bank.map(t=>`<option value="${t}" ${s.ans[i]===t?"selected":""}>${esc(termName(t))}</option>`).join("")}</select>
+        <span class="st" aria-hidden="true">${st==="locked"?"✓":st==="wrong"?"✗":""}</span>
+        ${st!=="locked"&&miss>=2?`<div class="cluebox">${s.clue[i]?`<p>${esc(TERMS[tag.term].clue)}</p>`:`<button class="linkbtn" data-clue="${i}">Need a clue?</button>`}</div>`:""}
+      </li>`;}).join("")}</ol></div>`;
+    h+=histHTML(s);
+  } else if(s.phase==="practical"){
+    const pr=s.pr;
+    h+=`<div><div class="lbl">${sc.quick?"Quick ID":"Practical Check"}</div><p class="note" style="color:var(--ink)">${sc.quick?"Type the name of the tagged bone.":"The camera has moved. Type the name of each lettered structure. No word bank, and no hints until you submit the whole round."}</p>
+      <ol class="answers">${pr.items.map((i,k)=>{const st=pr.st[i]||"",tag=curRT.tags[i];return `<li class="row ${st==="ok"?"locked":st==="wrong"?"wrong":""}">
+        ${tag.ask?`<span></span><p class="ask">${esc(tag.ask)}</p>`:""}
+        <button class="num" data-pc="${i}" aria-label="Tag ${sc.quick?"":LET[k]}">${sc.quick?"?":LET[k]}</button>
+        <input id="pc-${i}" data-i="${i}" value="${esc(pr.ans[i]||"")}" ${st==="ok"?"disabled":""} autocomplete="off" spellcheck="false" maxlength="1000" placeholder="Type the structure name" aria-label="Name for tag ${LET[k]}">
+        <span class="st">${st==="ok"?"✓":st==="wrong"?"✗":""}</span>
+        ${st==="wrong"?`<div class="cluebox">${pr.clue&&pr.clue[i]?`<p>${esc(TERMS[tag.term].clue)}</p>`:`<button class="linkbtn" data-pclue="${i}">Need a clue?</button>`}</div>`:""}
+        ${st==="ok"&&pr.note&&pr.note[i]?`<p class="ask" style="text-transform:none;letter-spacing:0">${esc(pr.note[i])}</p>`:""}
+      </li>`;}).join("")}</ol></div>`;
+    if(pr.rounds)h+=`<div><div class="lbl">Rounds</div><p class="note">${pr.rounds} submitted</p></div>`;
+  } else if(s.phase==="prove"){
+    h+=`<div class="prove"><div class="lbl">Prove it</div><p class="note" style="color:var(--ink)">The point is to name the relationship that identifies the structure, not to describe this one model. A few sentences is plenty.</p>`;
+    s.prove.forEach((p,k)=>{h+=`<label for="pv-${k}" class="q">${esc(p.q)}</label><textarea id="pv-${k}" data-k="${k}" maxlength="2000" placeholder="What relationship, shape, or position tells you what this is?">${esc(p.a||"")}</textarea><div class="count" id="pvc-${k}"></div>`;});
+    h+=`</div>`;
+  } else if(s.phase==="done"){
+    const pr=s.pr||{rounds:0};
+    h+=`<div><div class="lbl">Scene complete</div><dl class="stats">
+      ${sc.quick?"":`<dt>Label checks</dt><dd>${s.checks.length}</dd>`}<dt>${sc.quick?"Attempts":"Practical Check rounds"}</dt><dd>${pr.rounds}</dd><dt>Clues used</dt><dd>${Object.keys(s.clue).length+Object.keys(pr.clue||{}).length}</dd></dl></div>`;
+    h+=`<div><div class="lbl">Evidence image</div>${s.snap?`<img class="thumb" src="${s.snap.url}" alt="Snapshot of your labeled ${esc(sc.specimen)}">`:""}<p class="note">Rotate to the view you want graded, then update the image. This image goes into your submission PDF. Export your full PDF from the Submission page.</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="btn small" id="bSnap">Update image from current view</button></div></div>`;
+    if(s.prove&&s.prove.length)h+=`<div><div class="lbl">Your reasoning</div>${s.prove.map(p=>`<p class="note" style="color:var(--ink);margin-top:8px"><b>${esc(p.q)}</b><br>${esc(p.a)}</p>`).join("")}</div>`;
+    if(!sc.quick)h+=histHTML(s);
+  }
+  R.innerHTML=h;
+  R.querySelectorAll("select[data-i]").forEach(el=>el.onchange=()=>{const i=+el.dataset.i;s.ans[i]=el.value;if(s.st[i]==="wrong")s.st[i]="";selTag=i;save();renderRight();renderToolbar();buildPins();});
+  R.querySelectorAll("[data-sel]").forEach(b=>b.onclick=()=>selectTag(+b.dataset.sel));
+  R.querySelectorAll("select[data-i]").forEach(el=>el.addEventListener("focus",()=>{const i=+el.dataset.i;if(selTag!==i){selTag=i;R.querySelectorAll(".row").forEach(r=>r.classList.toggle("sel",+r.dataset.i===i));buildPins();}}));
+  R.querySelectorAll("[data-clue]").forEach(b=>b.onclick=()=>{s.clue[+b.dataset.clue]=1;logEvent("clue",{stage:"labels",tag:+b.dataset.clue});save();renderRight();});
+  R.querySelectorAll("[data-pclue]").forEach(b=>b.onclick=()=>{s.pr.clue=s.pr.clue||{};s.pr.clue[+b.dataset.pclue]=1;logEvent("clue",{stage:"practical",tag:+b.dataset.pclue});save();renderRight();});
+  R.querySelectorAll("input[data-i]").forEach(el=>el.oninput=()=>{const i=+el.dataset.i;s.pr.ans[i]=el.value;if(s.pr.st[i]==="wrong"){s.pr.st[i]="";el.closest(".row").classList.remove("wrong");}save();renderToolbar();});
+  R.querySelectorAll("input[data-i]").forEach(el=>el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const b=$("#bPrimary");if(!b.disabled)b.click();}}));
+  R.querySelectorAll("[data-pc]").forEach(b=>b.onclick=()=>pinClick(+b.dataset.pc));
+  R.querySelectorAll("textarea[data-k]").forEach(el=>{const upd=()=>{const k=+el.dataset.k;s.prove[k].a=el.value;const n=el.value.trim().length;$("#pvc-"+k).textContent=n<25?`${25-n} more characters`:"Ready";save();renderToolbar();};el.oninput=upd;upd();});
+  const bs=$("#bSnap");if(bs)bs.onclick=()=>{capture();renderRight();toast("Evidence image updated.");};
+}
+function histHTML(s){
+  const sc=SC();const missed=s.order.filter(i=>s.miss[i]);
+  return `<div><div class="lbl">Attempt history</div>${s.checks.length?`<ul class="hist">${s.checks.map((c,k)=>`<li><span>Check ${k+1}</span><span>${c.c} of ${c.n} correct</span></li>`).join("")}</ul>`:`<p class="empty">No checks yet.</p>`}</div>
+  <div><div class="lbl">Missed structures</div>${missed.length?`<ul class="hist">${missed.map(i=>`<li><span>Tag ${numOf(s,i)}${s.st[i]==="locked"?`: ${esc(termName(curRT.tags[i].term))}`:""}</span><span>${s.miss[i]} ${s.miss[i]===1?"miss":"misses"}${s.clue[i]?" · clue":""}</span></li>`).join("")}</ul>`:`<p class="empty">None so far.</p>`}</div>`;
+}
+function renderToolbar(){
+  const sc=SC(),s=S(),b=$("#bPrimary");b.onclick=null;
+  if(AUTH.on){b.textContent="Authoring";b.disabled=true;}
+  else if(s.phase==="label"){const all=curRT.tags.every((t,i)=>s.st[i]==="locked");
+    if(all){b.textContent="Start Practical Check";b.disabled=false;b.onclick=startPractical;}
+    else{b.textContent="Check Labels";b.disabled=!curRT.tags.every((t,i)=>s.st[i]==="locked"||s.ans[i]);b.onclick=checkLabels;b.title=b.disabled?"Assign a term to every tag first":"";}}
+  else if(s.phase==="practical"){const all=s.pr.items.every(i=>s.pr.st[i]==="ok");
+    if(all){b.textContent=sc.quick?"Finish":"Continue to Prove it";b.disabled=false;b.onclick=sc.quick?finishScene:startProve;}
+    else{b.textContent=sc.quick?"Submit":"Submit Practical Check";b.disabled=!s.pr.items.every(i=>s.pr.st[i]==="ok"||(s.pr.ans[i]||"").trim());b.onclick=submitPractical;}}
+  else if(s.phase==="prove"){b.textContent="Submit Reasoning";b.disabled=!s.prove.every(p=>(p.a||"").trim().length>=25);b.onclick=submitProve;}
+  else if(s.phase==="done"){b.textContent="Update Evidence Image";b.disabled=false;b.onclick=()=>{capture();renderRight();toast("Evidence image updated from the current view.");};}
+  const n=$("#bNext");const last=ST.cur>=SCENES.length-1;n.textContent=last?"Go to Submission":"Next Scene";n.className="btn"+(s.phase==="done"&&!AUTH.on?" primary":"");
+}
+
+function setMsg(t,m){S().msg={t,m};}
+function checkLabels(){
+  const sc=SC(),s=S();let wrongs=[];
+  curRT.tags.forEach((tag,i)=>{if(s.st[i]==="locked")return;if(s.ans[i]===tag.term)s.st[i]="locked";else{s.st[i]="wrong";s.miss[i]=(s.miss[i]||0)+1;wrongs.push(i);}});
+  const n=curRT.tags.length,c=n-wrongs.length;s.checks.push({c,n});
+  if(!wrongs.length){setMsg("ok",["All tags correct and locked in.","Next is the Practical Check: a new camera angle and no word bank."]);selTag=null;}
+  else{
+    const m=[`${c} of ${n} locked in. ${wrongs.length} not quite.`,`Reorient the ${sc.specimen} and compare each flagged region with the structures around it.`];
+    const tips=new Set();wrongs.forEach(i=>{const cf=CONF.find(x=>x.set.includes(curRT.tags[i].term)&&x.set.includes(s.ans[i]));if(cf&&!tips.has(cf.tip)){tips.add(cf.tip);m.push(`• Tag ${numOf(s,i)}: ${cf.tip}`);}});
+    if(wrongs.some(i=>s.miss[i]===2))m.push("A clue is now available for tags you have missed twice.");
+    setMsg("bad",m);selTag=wrongs.sort((a,b)=>numOf(s,a)-numOf(s,b))[0];
+  }
+  logEvent("labels",{round:s.checks.length,results:curRT.tags.map((tag,i)=>({tag:i,term:tag.term,answer:s.ans[i]||"",correct:s.st[i]==="locked"}))});
+  save();renderAll();
+}
+function bestView(items){
+  let best=null,bs=-1;
+  const base=currentView();
+  for(let k=0;k<26;k++){
+    const v={az:Math.round(Math.random()*360-180),el:Math.round(Math.random()*85-30)};
+    if(Math.abs(((v.az-base.az+540)%360)-180)<40)continue;
+    setView(v);camera.updateMatrixWorld();let sc=0;
+    for(const i of items){const w=tagWorld(i),dir=w.clone().sub(camera.position),d=dir.length();ray.set(camera.position,dir.normalize());ray.far=d;const h=ray.intersectObject(curRT.model,true)[0];if(!(h&&h.distance<d-.1))sc++;}
+    if(sc>bs){bs=sc;best=v;if(sc===items.length)break;}
+  }
+  return best||{az:base.az+120,el:20};
+}
+function initPractical(s){
+  const n=curRT.tags.length,sc=SC();
+  const k=sc.quick?1:Math.min(n,Math.max(3,Math.min(5,Math.round(n*.4))));
+  const items=shuffle([...Array(n).keys()]).slice(0,k).sort((a,b)=>a-b);
+  s.pr={items:shuffle(items),ans:{},st:{},miss:{},clue:{},note:{},rounds:0,view:sc.quick?{...curRT.view}:bestView(items)};
+}
+function startPractical(){const s=S();s.lastView=currentView();s.phase="practical";initPractical(s);setView(s.pr.view);
+  setMsg("",["Practical Check. The specimen has been turned to a new orientation, as it might be on the practical. Rotate freely, then type each name."]);save();renderAll();
+  setTimeout(()=>{const f=document.querySelector("#right input[data-i]");if(f)f.focus({preventScroll:true});},50);}
+
+function norm(str){return str.toLowerCase().replace(/[’'`]/g,"").replace(/\b(the|left|right|of the)\b/g," ").replace(/[^a-z0-9]+/g," ").trim().split(/\s+/).map(sing).join(" ");}
+function sing(w){if(w==="foramina")return"foramen";if(w==="laminae")return"lamina";if(w==="processes")return"process";if(/(ches|shes|xes|sses)$/.test(w))return w.slice(0,-2);if(/s$/.test(w)&&!/(ss|us|is)$/.test(w)&&w.length>3)return w.slice(0,-1);return w;}
+function lev(a,b){const m=a.length,n=b.length;const d=Array.from({length:m+1},(_,i)=>[i]);for(let j=1;j<=n;j++)d[0][j]=j;for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n];}
+function grade(input,termId){
+  const t=TERMS[termId],x=norm(input);if(!x)return{ok:false};
+  const cands=[t.name,...(t.acc||[])].map(norm);
+  if(cands.includes(x))return{ok:true};
+  for(const c of cands){const tol=c.length>=14?2:c.length>=6?1:0;if(tol&&lev(x,c)<=tol)return{ok:true,note:`Accepted. Check your spelling: ${t.name}.`};}
+  return{ok:false};
+}
+function submitPractical(){
+  const sc=SC(),s=S(),pr=s.pr;pr.rounds++;let wrong=[];
+  pr.items.forEach(i=>{if(pr.st[i]==="ok")return;const g=grade(pr.ans[i]||"",curRT.tags[i].term);if(g.ok){pr.st[i]="ok";if(g.note)pr.note[i]=g.note;}else{pr.st[i]="wrong";pr.miss[i]=(pr.miss[i]||0)+1;wrong.push(i);}});
+  if(pr.rounds===1)pr.firstResults=pr.items.map(i=>({tag:i,term:curRT.tags[i].term,answer:pr.ans[i]||"",correct:pr.st[i]==="ok"}));
+  if(!wrong.length)setMsg("ok",[sc.quick?"Correct.":"Practical Check complete. Every structure identified without a word bank.",sc.quick?"Finish to record it.":"One more step: Prove it."]);
+  else{const m=[`${pr.items.length-wrong.length} of ${pr.items.length} correct. Retry the flagged ${wrong.length===1?"item":"items"}.`,"Rotate the specimen and work from relationships to neighboring structures. Clues are now available."];
+    setMsg("bad",m);}
+  logEvent("practical",{round:pr.rounds,results:pr.items.map(i=>({tag:i,term:curRT.tags[i].term,answer:pr.ans[i]||"",correct:pr.st[i]==="ok"}))});
+  save();renderAll();
+}
+function startProve(){
+  const sc=SC(),s=S(),n=curRT.tags.length,cnt=n>=6?2:1;
+  const pri=i=>(s.miss[i]?2:0)+(CONF.some(c=>c.set.includes(curRT.tags[i].term))?1:0)+Math.random();
+  const pick=[...Array(n).keys()].sort((a,b)=>pri(b)-pri(a)).slice(0,cnt);
+  s.prove=pick.map(i=>{const t=curRT.tags[i].term,cf=CONF.find(c=>c.set.includes(t));const other=cf&&cf.set.filter(x=>x!==t&&(sc.terms.includes(x)||sc.distractors.includes(x)))[0];
+    const q=other?`How would you distinguish the ${termName(t)} from the ${termName(other)} on an unfamiliar specimen?`:`You identified tag ${numOf(s,i)} as the ${termName(t)}. What visual or spatial clue would help you identify it again on a different ${sc.specimen}?`;
+    return {i,q,a:""};});
+  s.phase="prove";setMsg("",["Prove it. The tagged structure is shown on the model. Answer from the anatomy, not from memory of this screen."]);setView(s.lastView||curRT.view);save();renderAll();
+}
+function submitProve(){logEvent("reasoning",{answers:S().prove.map(p=>({question:p.q,answer:p.a}))});finishScene();}
+function finishScene(){
+  const sc=SC(),s=S();s.phase="done";s.completedAt=Date.now();logEvent("scene-complete");
+  setMsg("ok",[sc.quick?"Quick ID complete.":`${sc.title} complete.`,"Rotate to the view you want graded, then update the evidence image if needed."]);
+  if(!sc.quick&&s.lastView)setView(s.lastView);
+  save();renderAll();
+  const fid=sc.id;requestAnimationFrame(()=>requestAnimationFrame(()=>{if(SC().id!==fid||RT[fid]!==curRT)return;capture();renderRight();renderStepper();renderLeft();}));
+}
+function capture(){
+  if(!curRT||RT[SC().id]!==curRT)return;const s=S();controls.update();renderer.render(scene3,camera);updatePins(performance.now()+1000);
+  const r=stage.getBoundingClientRect();
+  const c=document.createElement("canvas");const W=Math.min(1100,Math.round(r.width));const H=Math.round(W*r.height/r.width);c.width=W;c.height=H;c.getContext("2d").drawImage(glc,0,0,W,H);
+  const k=W/r.width;
+  s.snap={url:c.toDataURL("image/jpeg",.86),w:W,h:H,labels:PINS.filter(p=>p.vis).map(p=>({x:p.x*k,y:p.y*k,label:p.label,name:p.name,occ:p.occ})),at:Date.now()};
+  save();
+}
+
+/* =========================================================
+   EXPORT
+   ========================================================= */
+const loadImg=src=>new Promise(r=>{const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=src;});
+function wrap(ctx,text,maxW){const words=String(text).split(/\s+/),lines=[];let cur="";for(const w of words){const t=cur?cur+" "+w:w;if(ctx.measureText(t).width>maxW&&cur){lines.push(cur);cur=w;}else cur=t;}if(cur)lines.push(cur);return lines;}
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+const EX={bg:"#ffffff",ink:"#172126",mut:"#56676e",line:"#d3dcdf",acc:"#0d6b67",pin:"#d9480f",ok:"#2b8a3e",soft:"#eef3f4"};
+async function drawBlock(ctx,x0,y0,W,i,dry){
+  const sc=SCENES[i],s=ST.sc[sc.id],pad=28;let y=y0+pad;const inner=W-pad*2;
+  const F=(w,sz,fam)=>`${w} ${sz}px ${fam==="m"?"'IBM Plex Mono',monospace":fam==="d"?"Archivo,Arial,sans-serif":"'Source Sans 3',Arial,sans-serif"}`;
+  const P=(txt,font,col,dy)=>{if(!dry){ctx.font=font;ctx.fillStyle=col;ctx.fillText(txt,x0+pad,y);}y+=dy;};
+  ctx.textBaseline="top";
+  P("HW7: Axial Skeleton + Pelvic Girdle",F(700,24,"d"),EX.ink,34);
+  P(`Student: ${ST.name||"(no name)"}`,F(600,17,"b"),EX.ink,26);
+  P(sc.quick?"Quick ID: Hyoid":`Scene ${sc.k} of ${NMAIN}: ${sc.title}`,F(600,17,"b"),EX.ink,30);
+  const pr=s&&s.pr||{rounds:0,clue:{}};const done=s&&s.phase==="done";
+  const line=sc.quick?`${done?"✓":"✗"} Quick ID completed     Attempts: ${pr.rounds}`:`${done?"✓":"✗"} Mastery completed     ${done?"✓":"✗"} Practical Check completed     Label checks: ${s?s.checks.length:0}     Practical rounds: ${pr.rounds}     Clues: ${s?Object.keys(s.clue).length+Object.keys(pr.clue||{}).length:0}`;
+  P(line,F(600,14,"m"),done?EX.ok:EX.pin,26);
+  if(s&&s.completedAt)P("Completed "+new Date(s.completedAt).toLocaleString(),F(400,14,"b"),EX.mut,28);else y+=6;
+  if(s&&s.snap){
+    let iw=inner,h=Math.round(inner*s.snap.h/s.snap.w);if(h>640){iw=Math.round(iw*640/h);h=640;}const ix=x0+pad+Math.round((inner-iw)/2);
+    if(!dry){const im=await loadImg(s.snap.url);if(im)ctx.drawImage(im,ix,y,iw,h);ctx.strokeStyle=EX.line;ctx.lineWidth=1;ctx.strokeRect(ix+.5,y+.5,iw-1,h-1);
+      const k=iw/s.snap.w;ctx.font=F(600,14,"m");
+      for(const L of s.snap.labels){const lx=ix+L.x*k,ly=y+L.y*k;const txt=L.label+(L.name?"  "+L.name:"");const tw=ctx.measureText(txt).width+14;
+        ctx.globalAlpha=L.occ?.55:1;ctx.fillStyle=EX.ok;ctx.fillRect(lx-1,ly-14,2,12);rr(ctx,lx-tw/2,ly-40,tw,26,5);ctx.fill();ctx.fillStyle="#fff";ctx.textAlign="center";ctx.fillText(txt,lx,ly-35);ctx.textAlign="left";ctx.globalAlpha=1;
+        ctx.beginPath();ctx.arc(lx,ly,4,0,7);ctx.fillStyle=EX.pin;ctx.fill();}}
+    y+=h+18;
+  } else {P("No evidence image captured for this scene yet.",F(400,15,"b"),EX.pin,30);}
+  if(s&&s.prove&&s.prove.length){
+    P("Prove it",F(700,16,"d"),EX.ink,24);
+    for(const p of s.prove){ctx.font=F(600,14,"b");for(const l of wrap(ctx,p.q,inner))P(l,F(600,14,"b"),EX.ink,20);ctx.font=F(400,14,"b");for(const l of wrap(ctx,p.a||"",inner))P(l,F(400,14,"b"),EX.ink,20);y+=8;}
+  }
+  return y+pad-y0;
+}
+async function sceneCanvas(i){
+  const W=1000,c=document.createElement("canvas"),ctx=c.getContext("2d");
+  const h=await drawBlock(ctx,0,0,W,i,true);c.width=W;c.height=h;ctx.fillStyle=EX.bg;ctx.fillRect(0,0,W,h);await drawBlock(ctx,0,0,W,i,false);return c;
+}
+async function exportScene(i){
+  const s=ST.sc[SCENES[i].id];if(s&&!s.snap)capture();
+  const c=await sceneCanvas(i);const sc=SCENES[i];
+  showImage(c.toDataURL("image/png"),`HW7-${slug(ST.name)}-${sc.k}-${sc.id}.png`,`Submission image for ${sc.title}.`);
+}
+async function exportAll(){
+  const W=1000,pad=28,blocks=[];const c0=document.createElement("canvas").getContext("2d");
+  for(let i=0;i<SCENES.length;i++)blocks.push(await drawBlock(c0,0,0,W,i,true));
+  const coverH=150+SCENES.length*26;const H=coverH+blocks.reduce((a,b)=>a+b+14,0);
+  const c=document.createElement("canvas");c.width=W;c.height=H;const ctx=c.getContext("2d");ctx.fillStyle=EX.bg;ctx.fillRect(0,0,W,H);ctx.textBaseline="top";
+  ctx.fillStyle=EX.acc;ctx.fillRect(0,0,W,8);
+  ctx.fillStyle=EX.ink;ctx.font="800 32px Archivo,Arial,sans-serif";ctx.fillText("HW7: Axial Skeleton + Pelvic Girdle",pad,30);
+  ctx.font="600 18px 'Source Sans 3',Arial,sans-serif";ctx.fillText(`Student: ${ST.name||"(no name)"}     Exported ${new Date().toLocaleString()}`,pad,74);
+  ctx.font="600 13px 'IBM Plex Mono',monospace";ctx.fillStyle=EX.mut;ctx.fillText("SUBMISSION PACKAGE",pad,110);
+  SCENES.forEach((sc,i)=>{const d=isDone(sc.id);ctx.fillStyle=d?EX.ok:EX.pin;ctx.font="600 16px 'IBM Plex Mono',monospace";ctx.fillText(d?"✓":"✗",pad,134+i*26);ctx.fillStyle=EX.ink;ctx.font="600 16px 'Source Sans 3',Arial,sans-serif";ctx.fillText((sc.quick?"Quick ID: Hyoid":`${sc.k}. ${sc.title}`),pad+26,134+i*26);});
+  let y=coverH;for(let i=0;i<SCENES.length;i++){ctx.fillStyle=EX.soft;ctx.fillRect(0,y,W,14);y+=14;await drawBlock(ctx,0,y,W,i,false);y+=blocks[i];}
+  showImage(c.toDataURL("image/png"),`HW7-${slug(ST.name)}-all-scenes.png`,"One image containing every scene. Upload this single file to D2L.");
+}
+function coverCanvas(){
+  const W=1000,H=1294,pad=56,c=document.createElement("canvas");c.width=W;c.height=H;const ctx=c.getContext("2d");
+  ctx.fillStyle=EX.bg;ctx.fillRect(0,0,W,H);ctx.textBaseline="top";ctx.fillStyle=EX.acc;ctx.fillRect(0,0,W,10);
+  ctx.fillStyle=EX.ink;ctx.font="800 40px Archivo,Arial,sans-serif";ctx.fillText("HW7: 3D Practical Prep",pad,70);
+  ctx.font="600 22px 'Source Sans 3',Arial,sans-serif";ctx.fillStyle=EX.mut;ctx.fillText("Axial Skeleton + Pelvic Girdle · Submission PDF",pad,124);
+  ctx.fillStyle=EX.ink;ctx.font="700 26px 'Source Sans 3',Arial,sans-serif";ctx.fillText(`Student: ${ST.name||"(no name)"}`,pad,190);
+  ctx.font="400 20px 'Source Sans 3',Arial,sans-serif";ctx.fillStyle=EX.mut;ctx.fillText(`Exported ${new Date().toLocaleString()}`,pad,230);
+  ctx.font="400 13px Arial,sans-serif";ctx.fillText(`Attempt: ${ST.attemptId||"instructor preview"}`,pad,264);
+  const n=SCENES.filter(s=>isDone(s.id)).length;
+  ctx.fillStyle=n===SCENES.length?EX.ok:EX.pin;ctx.font="700 22px 'Source Sans 3',Arial,sans-serif";ctx.fillText(`${n} of ${SCENES.length} items complete`,pad,290);
+  let y=350;ctx.font="600 14px 'IBM Plex Mono',monospace";ctx.fillStyle=EX.mut;[["ITEM",0],["LABELING",520],["PRACTICAL CHECK",640],["PROVE IT",800]].forEach(([t,x])=>ctx.fillText(t,pad+x,y));y+=34;
+  SCENES.forEach(sc=>{const s=ST.sc[sc.id]||{};const d=s.phase==="done";const pr=s.pr||{};
+    ctx.strokeStyle=EX.line;ctx.beginPath();ctx.moveTo(pad,y-10);ctx.lineTo(W-pad,y-10);ctx.stroke();
+    ctx.font="600 20px 'Source Sans 3',Arial,sans-serif";ctx.fillStyle=EX.ink;ctx.fillText(sc.quick?"Quick ID: Hyoid":`${sc.k}. ${sc.title}`,pad,y);
+    const mark=(ok,x)=>{ctx.fillStyle=ok?EX.ok:EX.pin;ctx.font="700 18px 'Source Sans 3',Arial,sans-serif";ctx.fillText(ok?"Complete":"Not yet",x,y+2);};
+    const lab=sc.quick?null:(s.phase&&s.phase!=="label");const prac=d;const prove=sc.quick?null:d&&s.prove&&s.prove.every(p=>(p.a||"").trim().length>=25);
+    if(lab===null){ctx.fillStyle=EX.mut;ctx.font="400 18px 'Source Sans 3',Arial,sans-serif";ctx.fillText("n/a",pad+520,y+2);}else mark(lab,pad+520);
+    mark(prac,pad+640);
+    if(prove===null){ctx.fillStyle=EX.mut;ctx.font="400 18px 'Source Sans 3',Arial,sans-serif";ctx.fillText("n/a",pad+800,y+2);}else mark(prove,pad+800);
+    y+=44;});
+  y+=30;ctx.fillStyle=EX.ink;ctx.font="400 18px 'Source Sans 3',Arial,sans-serif";
+  for(const l of wrap(ctx,"Each following page shows one scene: the labeled specimen in the orientation the student chose, attempt counts, and the student's Prove it reasoning. First-attempt accuracy is not graded.",W-pad*2)){ctx.fillText(l,pad,y);y+=26;}
+  return c;
+}
+async function exportPDF(){
+  const J=window.jspdf&&window.jspdf.jsPDF;if(!J){toast("The PDF tool did not load. Keep this page open and check your connection. Contact your instructor if the PDF tool is unavailable.");return;}
+  const nosnap=SCENES.filter(sc=>isDone(sc.id)&&!ST.sc[sc.id].snap);
+  if(nosnap.length){const raf=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    for(const sc of nosnap){await gotoScene(SCENES.indexOf(sc));await raf();capture();}
+    showFinal();await raf();}
+  const left=SCENES.filter(s=>!isDone(s.id)).length;
+  if(left&&!confirm(`${left} ${left===1?"item is":"items are"} not complete yet. Download the PDF anyway?`))return;
+  const btn=$("#bExportAll");btn.disabled=true;const old=btn.textContent;btn.textContent="Building PDF…";
+  try{
+    const doc=new J({unit:"pt",format:"letter",compress:true});const PW=612,PH=792,M=36;
+    const put=(c,first)=>{if(!first)doc.addPage();const s=Math.min((PW-2*M)/c.width,(PH-2*M)/c.height);const w=c.width*s,h=c.height*s;doc.addImage(c.toDataURL("image/jpeg",.88),"JPEG",(PW-w)/2,M,w,h);};
+    put(coverCanvas(),true);
+    for(let i=0;i<SCENES.length;i++)put(await sceneCanvas(i),false);
+    doc.setProperties({title:`HW7 3D Practical Prep - ${ST.name||"student"}`,author:ST.name||"",subject:"BIOL 2113 HW7 submission"});
+    doc.save(`HW7-${slug(ST.name)}.pdf`);ST.exportedAt=new Date().toISOString();logEvent("pdf-export",{complete:SCENES.every(s=>isDone(s.id))});AttemptLog.flush();toast("PDF downloaded. Upload it to the HW7 folder in D2L.");
+  }catch(e){console.error(e);toast("Something went wrong building the PDF. Keep this page open and try again. Do not refresh; contact your instructor if the error continues.");}
+  finally{btn.disabled=false;btn.textContent=old;}
+}
+const slug=s=>(s||"student").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()||"student";
+let modalURL=null,modalName="";
+function showImage(url,name,note){modalURL=url;modalName=name;$("#modalImg").src=url;$("#modalNote").textContent=note+" If Download does nothing in this window, right-click the image (or press and hold on a phone) and choose Save Image.";$("#modal").hidden=false;$("#bDownload").focus();}
+$("#bDownload").onclick=async()=>{try{const blob=await (await fetch(modalURL)).blob();const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download=modalName;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);}catch(e){toast("Download is blocked here. Right-click the image and choose Save Image.");}};
+$("#bCloseModal").onclick=()=>{$("#modal").hidden=true;};
+$("#modal").addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").hidden=true;});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("#modal").hidden=true;});
+
+/* =========================================================
+   FINAL SCREEN
+   ========================================================= */
+function showFinal(){
+  logEvent("submission-open");
+  $("#landing").hidden=true;$("#lab").hidden=true;$("#final").hidden=false;$("#stepper").hidden=false;$("#who").hidden=false;renderStepper();
+  const all=SCENES.every(s=>isDone(s.id));
+  $("#finTitle").textContent=all?"HW7 complete. Are you practical-ready?":"Submission package";
+  $("#pkg").innerHTML=SCENES.map((sc,i)=>`<li class="${isDone(sc.id)?"done":""}" data-go="${i}"><span class="mk">${isDone(sc.id)?"✓":""}</span><span><span class="k">${sc.k}</span> ${esc(sc.title)}</span></li>`).join("");
+  $("#pkg").querySelectorAll("[data-go]").forEach(li=>li.onclick=()=>gotoScene(+li.dataset.go));
+  const left=SCENES.filter(s=>!isDone(s.id)).length;
+  $("#finNote").textContent=all?"Download Submission PDF builds one PDF with a cover page and one page per scene. Upload that single PDF to D2L.":`${left} ${left===1?"scene remains":"scenes remain"}. You can download now, but incomplete scenes will be marked incomplete and will not earn their points.`;
+  const rev=[];SCENES.forEach(sc=>{const s=ST.sc[sc.id];if(!s)return;const tags=(RT[sc.id]||null);const names=sc.terms;
+    const seen=new Set();const add=t=>{if(!seen.has(t)){seen.add(t);rev.push(`${termName(t)} (${sc.title.replace("Quick ID: ","")})`);}};
+    if(tags){tags.tags.forEach((t,i)=>{if((s.miss[i]||0)>=2||s.clue[i]||(s.pr&&(s.pr.miss[i]||(s.pr.clue||{})[i])))add(t.term);});}});
+  $("#ready").innerHTML=`<h3>${all?"Completing this activity does not mean you are finished studying.":"Before the practical"}</h3>
+    <p>Before the practical, you should be able to identify these structures on an unlabeled physical specimen, from multiple orientations, without using a word bank or notes.</p>
+    <p>If you needed repeated hints or relied heavily on the word bank today, revisit those structures on the physical models before the practical.</p>
+    ${rev.length?`<p><b>Structures to revisit on the physical models</b> (missed twice, needed a clue, or missed in a Practical Check):</p><ul class="revisit">${rev.map(r=>`<li>${esc(r)}</li>`).join("")}</ul>`:""}`;
+}
+$("#toFinal").onclick=showFinal;
+$("#bBackLab").onclick=()=>gotoScene(ST.cur);
+$("#bExportAll").onclick=exportPDF;
+
+/* =========================================================
+   TOOLBAR + LANDING
+   ========================================================= */
+$("#bReset").onclick=()=>{const s=S();setView(s.phase==="practical"?s.pr.view:curRT.view);};
+$("#bCenter").onclick=recenter;
+$("#bNext").onclick=()=>{const s=S();if(s.phase!=="done"&&s.phase!=="label"){/* leaving mid-check is allowed; progress is saved */}s.lastView=s.phase==="label"?currentView():s.lastView;save();if(ST.cur>=SCENES.length-1)showFinal();else gotoScene(ST.cur+1);};
+$("#sceneList").innerHTML=SCENES.map(sc=>`<li><span class="k">${sc.k}</span><span>${esc(sc.title)}</span><span class="d">${esc(sc.desc)}</span></li>`).join("");
+$("#startForm").addEventListener("submit",async e=>{
+  e.preventDefault();const b=$("#beginButton"),error=$("#startError");error.textContent="";b.disabled=true;b.textContent="Starting...";
+  try{
+    const name=$("#nameIn").value.trim(),email=$("#emailIn").value.trim().toLowerCase();
+    const c=await AttemptLog.begin({name,email,courseCode:$("#codeIn").value},()=>ST);
+    ST={name,email,attemptId:c.attemptId,startedAt:c.startedAt,cur:0,sc:{}};save();await gotoScene(0);
+  }catch(err){error.textContent=err.message;}
+  finally{b.disabled=false;b.textContent="Begin new attempt";}
+});
+
+/* =========================================================
+   AUTHORING
+   ========================================================= */
+async function openAuthor(){
+  const r=await fetch("/.netlify/functions/admin-status");if(!r.ok){toast("Sign in on the instructor dashboard to use authoring tools.");return;}AUTH.on=true;$("#author").hidden=false;if($("#lab").hidden)gotoScene(ST.cur||0);else renderAll();}
+function closeAuthor(){AUTH.on=false;AUTH.place=false;$("#aPlace").checked=false;$("#author").hidden=true;if(!$("#lab").hidden)renderAll();}
+$("#openAuthor").onclick=openAuthor;$("#bCloseAuthor").onclick=closeAuthor;
+$("#aShow").onchange=e=>{AUTH.show=e.target.checked;buildPins();};
+$("#aPlace").onchange=e=>{AUTH.place=e.target.checked;toast(AUTH.place?"Click a point on the model to drop a tag.":"Tag placement off.");};
+function renderAuthor(){
+  if(!AUTH.on||!curRT)return;const sc=SC();$("#aScene").textContent=(sc.quick?"":`${sc.k}. `)+sc.title+(curRT.custom?` · ${curRT.file}`:" · placeholder model");
+  const opts=[...sc.terms,...sc.distractors];
+  $("#aTags").innerHTML=curRT.tags.map((t,i)=>`<li><span class="n">${i+1}</span><select data-ai="${i}">${opts.map(o=>`<option value="${o}" ${o===t.term?"selected":""}>${esc(termName(o))}</option>`).join("")}</select><button class="btn small" data-rm="${i}" aria-label="Remove tag ${i+1}">✕</button></li>`).join("")||`<li class="note">No tags yet.</li>`;
+  $("#aTags").querySelectorAll("[data-ai]").forEach(el=>el.onchange=()=>{curRT.tags[+el.dataset.ai].term=el.value;tagsChanged();});
+  $("#aTags").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{curRT.tags.splice(+b.dataset.rm,1);tagsChanged();});
+}
+function tagsChanged(){const sc=SC();delete ST.sc[sc.id];save();scs(sc.id).phase=sc.quick?"practical":"label";ensureOrder(S());if(sc.quick)initPracticalSafe();renderAll();}
+function initPracticalSafe(){const s=S();if(curRT.tags.length)initPractical(s);}
+$("#aFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const buf=await f.arrayBuffer();const model=await parseModel(buf,f.name);const sc=SC();
+  RT[sc.id]={model,tags:[],orient:[0,0,0],view:{...sc.view},file:"models/"+f.name,custom:true};mountRT(RT[sc.id]);setView(RT[sc.id].view);tagsChanged();toast("Model loaded. Orient it, then place tags.");}catch(err){console.error(err);toast("That file could not be read. Use a binary .glb or an .stl file.");}e.target.value="";};
+document.querySelectorAll("[data-rot]").forEach(b=>b.onclick=()=>{const ax="xyz".indexOf(b.dataset.rot);curRT.orient[ax]=(curRT.orient[ax]+1)%4;mountRT(curRT);recenter();});
+$("#aView").onclick=()=>{curRT.view=currentView();toast(`Start view saved (azimuth ${curRT.view.az}°, elevation ${curRT.view.el}°).`);};
+$("#aClear").onclick=()=>{curRT.tags=[];tagsChanged();};
+const r3=v=>Math.round(v*1e4)/1e4;
+function sceneJSON(sc){const rt=RT[sc.id];if(!rt)return null;const o={id:sc.id,orient:rt.orient,view:rt.view,tags:rt.tags.map(t=>({term:t.term,p:[r3(t.p.x),r3(t.p.y),r3(t.p.z)],...(t.ask?{ask:t.ask}:{})}))};if(rt.custom)o.model=rt.file;return o;}
+$("#aExport").onclick=()=>{const out={version:1,generated:new Date().toISOString(),scenes:SCENES.map(sceneJSON).filter(Boolean)};$("#aJson").value=JSON.stringify(out,null,1);toast("Exported every scene you have opened this session.");};
+$("#aCopy").onclick=()=>{const t=$("#aJson");navigator.clipboard.writeText(t.value).then(()=>toast("Copied."),()=>{t.select();toast("Press Ctrl+C or Cmd+C to copy.");});};
+$("#aImport").onclick=async()=>{let j;try{j=JSON.parse($("#aJson").value);}catch(e){return toast("That is not valid JSON.");}
+  const list=j.scenes||[j];let n=0;for(const o of list){const i=SCENES.findIndex(s=>s.id===o.id);if(i<0)continue;OVR[o.id]=o;const rt=RT[o.id];
+    if(rt&&(!o.model||rt.file===o.model)){applyOverride(rt,o,false);n++;}else{delete RT[o.id];n++;}delete ST.sc[o.id];}
+  save();toast(`Imported ${n} ${n===1?"scene":"scenes"}.`);gotoScene(ST.cur);};
+$("#aReset").onclick=()=>{delete ST.sc[SC().id];save();gotoScene(ST.cur);toast("Scene progress reset.");};
+$("#aResetAll").onclick=()=>{ST={...ST,sc:{}};save();gotoScene(ST.cur);toast("All progress reset.");};
+
+let toastT=null;function toast(m){let t=document.querySelector(".toast");if(!t){t=document.createElement("div");t.className="toast";t.setAttribute("role","status");document.body.appendChild(t);}t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true;},2600);}
+
+/* boot: optional scenes.json beside the page overrides placeholders */
+fetch("scenes.json").then(r=>r.ok?r.json():null).then(j=>{if(j&&j.scenes)j.scenes.forEach(o=>{OVR[o.id]=o;});}).catch(()=>{}).finally(()=>{if(location.hash==="#author")openAuthor();});
+</script>

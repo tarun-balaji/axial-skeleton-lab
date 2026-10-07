@@ -1,0 +1,9 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HW7 instructor attempt index</title><link rel="stylesheet" href="admin.css"></head><body>
+<main><header><div><p class="eyebrow">BIOL 2113 / INSTRUCTOR</p><h1>HW7 attempt index</h1><p>Every practice visit is a separate attempt. Students cannot reopen records.</p></div><a href="../">Student app</a></header>
+<section id="login"><h2>Instructor access</h2><form id="loginForm"><label for="password">Instructor password</label><input type="password" id="password" autocomplete="current-password" required><button>Sign in</button></form></section>
+<p id="status" role="status"></p>
+<section id="dashboard" hidden><div class="actions"><button id="refresh">Refresh index</button><button id="csv">Download attempt summary CSV</button><button id="logout">Sign out</button></div>
+<p class="note">Names and emails are entered by students and are not verified identities. These records support instruction. The PDF uploaded to D2L is the homework submission. An export event records PDF generation, not D2L submission.</p>
+<div class="cards" id="metrics"></div><h2>Class patterns</h2><div id="patterns"></div>
+<h2>All attempts</h2><label for="filter">Search name or email</label><input id="filter" type="search" placeholder="Search students"><div id="attempts"></div></section>
+<section id="detail" hidden></section></main><script src="admin.js"></script></body></html>
