@@ -50,7 +50,7 @@ export function validateSnapshot(data) {
   for(const e of data.events){assert(/^[0-9a-f-]{36}$/i.test(e.id)&&['labels','practical','clue','reasoning','scene-complete','pdf-export','submission-open'].includes(e.type));assert(!e.scene||scenes.some(s=>s.id===e.scene));}
   return {sequence:data.sequence,state,events:data.events};
 }
-export function summarize(state={cur:0,sc:{}},events=[]) {
+export function summarize(state={cur:0,sc:{}},events=[],completedAt={}) {
   let completed=0,started=0,labelChecks=0,practicalRounds=0,hints=0,reasoning=0;
   const detail=scenes.map(scene=>{
     const s=state.sc[scene.id]||{},pr=s.pr||{};
@@ -58,24 +58,44 @@ export function summarize(state={cur:0,sc:{}},events=[]) {
     labelChecks+=(s.checks||[]).length;practicalRounds+=pr.rounds||0;
     hints+=Object.keys(s.clue||{}).length+Object.keys(pr.clue||{}).length;
     reasoning+=(s.prove||[]).filter(p=>(p.a||'').trim().length>=25).length;
-    return {id:scene.id,phase:s.phase||'not-started',done,labelChecks:(s.checks||[]).length,practicalRounds:pr.rounds||0,reasoning:s.prove||[],missed:Object.entries(s.miss||{}).filter(([,n])=>n>0).map(([i,n])=>({term:scene.tags[i],count:n})),practicalMissed:Object.entries(pr.miss||{}).filter(([,n])=>n>0).map(([i,n])=>({term:scene.tags[i],count:n}))};
+    // Prefer the server-recorded time; fall back to the browser's clock for older records.
+    const at=completedAt[scene.id]||(done&&Number.isFinite(s.completedAt)?new Date(s.completedAt).toISOString():null);
+    return {id:scene.id,phase:s.phase||'not-started',done,completedAt:done?at:null,labelChecks:(s.checks||[]).length,practicalRounds:pr.rounds||0,reasoning:s.prove||[],missed:Object.entries(s.miss||{}).filter(([,n])=>n>0).map(([i,n])=>({term:scene.tags[i],count:n})),practicalMissed:Object.entries(pr.miss||{}).filter(([,n])=>n>0).map(([i,n])=>({term:scene.tags[i],count:n}))};
   });
   const first=Object.values(state.sc).flatMap(s=>s.pr?.firstResults||[]);
-  return {completed,total:scenes.length,started,percent:Math.round(100*completed/scenes.length),current:scenes[state.cur]?.id,labelChecks,practicalRounds,hints,reasoning,firstCorrect:first.filter(x=>x.correct).length,firstTotal:first.length,exported:!!state.exportedAt,detail};
+  const times=detail.map(d=>d.completedAt);
+  const allCompletedAt=completed===scenes.length&&times.every(Boolean)?times.sort().at(-1):null;
+  return {completed,allCompletedAt,total:scenes.length,started,percent:Math.round(100*completed/scenes.length),current:scenes[state.cur]?.id,labelChecks,practicalRounds,hints,reasoning,firstCorrect:first.filter(x=>x.correct).length,firstTotal:first.length,exported:!!state.exportedAt,detail};
 }
 export const attemptCredentials=()=>({attemptId:randomUUID(),token:randomBytes(32).toString('hex')});
-const cookieName='hw7_admin';
-function secret(){const s=process.env.HW7_ADMIN_SESSION_SECRET;if(!s||s.length<32)throw Object.assign(new Error('Set an admin session secret of at least 32 characters'),{status:503});return s;}
-export function adminConfigured(){return (process.env.HW7_ADMIN_PASSWORD||'').length>=16&&(process.env.HW7_ADMIN_SESSION_SECRET||'').length>=32;}
-export function sessionCookie(clear=false){
-  let value='';if(!clear){const payload=Buffer.from(JSON.stringify({exp:Date.now()+8*3600000,nonce:randomBytes(16).toString('hex')})).toString('base64url');value=payload+'.'+createHmac('sha256',secret()).update(payload).digest('base64url');}
-  return `${cookieName}=${value}; HttpOnly; Secure; SameSite=Strict; Path=/.netlify/functions/; Max-Age=${clear?0:28800}`;
+const cookieName='hw7_admin',sessionDays=30;
+// SHA-256 of the machine-generated instructor password. The password itself is never stored in the repository.
+// It is long and random, so this hash cannot practically be reversed. To replace it, hash a new random password.
+const builtInPasswordHash='a7e976517fb6b7bf654d26217c6acff4b54dc5b879ef292deb995c2fb0de5dd0';
+export function passwordOk(password){
+  if(typeof password!=='string'||!password)return false;
+  const typed=password.trim().toLowerCase();
+  const envPassword=process.env.HW7_ADMIN_PASSWORD||'';
+  // Hash first, then compare in constant time.
+  return equal(hash(typed),builtInPasswordHash)||(envPassword.length>=16&&equal(password,envPassword));
 }
-export function isAdmin(req){
-  if(!adminConfigured())return false;
+// The env variable is optional. Otherwise a random secret is generated once and kept in the attempt store.
+async function secret(store){
+  const env=process.env.HW7_ADMIN_SESSION_SECRET;if(env&&env.length>=32)return env;
+  if(!store)throw Object.assign(new Error('Instructor sessions are unavailable'),{status:503});
+  const key='config/admin-session-secret';
+  let saved=await store.get(key,{type:'json'});
+  if(!saved?.secret){await store.setJSON(key,{secret:randomBytes(32).toString('hex')},{onlyIfNew:true});saved=await store.get(key,{type:'json'});}
+  return saved.secret;
+}
+export async function sessionCookie(store,clear=false){
+  let value='';if(!clear){const payload=Buffer.from(JSON.stringify({exp:Date.now()+sessionDays*86400000,nonce:randomBytes(16).toString('hex')})).toString('base64url');value=payload+'.'+createHmac('sha256',await secret(store)).update(payload).digest('base64url');}
+  return `${cookieName}=${value}; HttpOnly; Secure; SameSite=Strict; Path=/.netlify/functions/; Max-Age=${clear?0:sessionDays*86400}`;
+}
+export async function isAdmin(req,store){
   const token=(req.headers.get('cookie')||'').split(';').map(s=>s.trim()).find(s=>s.startsWith(cookieName+'='))?.slice(cookieName.length+1);
   if(!token)return false;const [payload,sig]=token.split('.');if(!payload||!sig)return false;
-  const expected=createHmac('sha256',secret()).update(payload).digest('base64url');if(!equal(sig,expected))return false;
+  const expected=createHmac('sha256',await secret(store)).update(payload).digest('base64url');if(!equal(sig,expected))return false;
   try{return JSON.parse(Buffer.from(payload,'base64url').toString()).exp>Date.now();}catch{return false;}
 }
 export async function allKeys(store,prefix){const keys=[];for await(const page of store.list({prefix,paginate:true}))keys.push(...page.blobs.map(b=>b.key));return keys;}
