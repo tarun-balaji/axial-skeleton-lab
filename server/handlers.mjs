@@ -1,19 +1,18 @@
-import {json,body,sameOrigin,identity,hash,equal,validateSnapshot,summarize,attemptCredentials,adminConfigured,sessionCookie,isAdmin,allKeys} from './core.mjs';
+import {json,body,sameOrigin,identity,hash,equal,validateSnapshot,summarize,attemptCredentials,passwordOk,sessionCookie,isAdmin,allKeys} from './core.mjs';
 export function handler(action,getStore){return async req=>{
   try{
     if(!sameOrigin(req))return json({error:'Cross-site request blocked'},403);
     if(['start','save','login','logout'].includes(action)&&req.method!=='POST')return json({error:'POST required'},405,{'Allow':'POST'});
     if(action==='index'&&req.method!=='GET')return json({error:'GET required'},405,{'Allow':'GET'});
-    if(action==='logout')return json({ok:true},200,{'Set-Cookie':sessionCookie(true)});
-    if(action==='login'){
-      if(!adminConfigured())return json({error:'Instructor access is not configured. Set the two admin environment variables.'},503);
-      const data=await body(req,2000);
-      if(typeof data.password!=='string'||!equal(data.password,process.env.HW7_ADMIN_PASSWORD))return json({error:'Incorrect instructor password'},401);
-      return json({ok:true},200,{'Set-Cookie':sessionCookie()});
-    }
-    if(['index','status'].includes(action)&&!isAdmin(req))return json({error:'Instructor login required'},401);
-    if(action==='status')return json({ok:true});
     const store=getStore();
+    if(action==='logout')return json({ok:true},200,{'Set-Cookie':await sessionCookie(store,true)});
+    if(action==='login'){
+      const data=await body(req,2000);
+      if(!passwordOk(data.password))return json({error:'Incorrect instructor password'},401);
+      return json({ok:true},200,{'Set-Cookie':await sessionCookie(store)});
+    }
+    if(['index','status'].includes(action)&&!await isAdmin(req,store))return json({error:'Instructor login required'},401);
+    if(action==='status')return json({ok:true});
     if(action==='start'){
       const data=await body(req,2000);const person=identity(data);
       if(process.env.HW7_COURSE_CODE&&!equal(data.courseCode||'',process.env.HW7_COURSE_CODE))return json({error:'Incorrect course access code'},403);

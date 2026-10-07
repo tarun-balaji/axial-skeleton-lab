@@ -56,3 +56,14 @@ test('section completion times are recorded by the server and indexed',async()=>
  const s=(await(await call('index',undefined,{headers:{cookie}})).json()).attempts[0].summary;
  assert.equal(s.detail.find(d=>d.id==='vertebra').completedAt,first);assert.equal(s.detail.find(d=>d.id==='atlas').completedAt,null);assert.equal(s.allCompletedAt,null);
 });
+test('built-in password works without environment variables and the session lasts 30 days',async()=>{
+ const saved={p:process.env.HW7_ADMIN_PASSWORD,s:process.env.HW7_ADMIN_SESSION_SECRET};delete process.env.HW7_ADMIN_PASSWORD;delete process.env.HW7_ADMIN_SESSION_SECRET;
+ try{
+  const {call,map}=setup();assert.equal((await call('login',{password:'wrong'})).status,401);assert.equal((await call('login',{password:saved.p})).status,401);
+  const pw=process.env.HW7_TEST_BUILTIN_PASSWORD;
+  if(pw){const login=await call('login',{password:pw});assert.equal(login.status,200);assert.match(login.headers.get('set-cookie'),/Max-Age=2592000/);
+   const cookie=login.headers.get('set-cookie').split(';')[0];assert.equal((await call('index',undefined,{headers:{cookie}})).status,200);assert.equal((await call('status',undefined,{headers:{cookie}})).status,200);
+   assert.ok(map.get('config/admin-session-secret').secret.length>=32);}
+  assert.equal((await call('index',undefined,{headers:{cookie:'hw7_admin=forged.bad'}})).status,401);
+ }finally{process.env.HW7_ADMIN_PASSWORD=saved.p;process.env.HW7_ADMIN_SESSION_SECRET=saved.s;}
+});

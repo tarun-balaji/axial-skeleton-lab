@@ -35,6 +35,7 @@ async function detail(id){
 }
 $('#loginForm').onsubmit=async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;try{await post('admin-login',{password:$('#password').value});$('#password').value='';await load();}catch(err){$('#status').textContent=err.message;}finally{b.disabled=false;}};
 $('#logout').onclick=async()=>{await post('admin-logout',{});showLogin();$('#status').textContent='Signed out.';};
+$('#showPassword').onchange=e=>$('#password').type=e.target.checked?'text':'password';
 $('#refresh').onclick=load;$('#filter').oninput=renderAttempts;
 $('#csv').onclick=()=>{
   const safe=s=>{s=String(s??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"';};

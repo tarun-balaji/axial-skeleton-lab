@@ -19,11 +19,12 @@ Student instructions are in `public/instructions.html` and `public/HW7_3D_Practi
 ## Deploy to Netlify
 
 1. Put the **contents of this hw7 folder** in a Git repository. Connect that repository to your Netlify project. Keep the supplied `netlify.toml`. Publish directory is `public`, Functions directory is `netlify/functions`, and build command is `npm ci && npm run build`.
-2. Set these environment variables for **Functions** in Netlify, then redeploy:
-   - `HW7_ADMIN_PASSWORD`: a unique instructor password, at least 16 characters.
-   - `HW7_ADMIN_SESSION_SECRET`: at least 32 random characters. Generate one locally using `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
-   - Optional `HW7_COURSE_CODE`: a course access code you give students. Leave unset to allow starts without a code. The correct value is checked on the server and is never embedded in browser code.
-   - Optional `HW7_STORE_NAME`: defaults to `hw7-attempts-v3`. Give previews/testing a separate name if needed.
+2. No environment variables are required. The instructor password is machine-generated and was given to the instructor once. The code stores only its SHA-256 hash (`builtInPasswordHash` in `server/core.mjs`). The instructor session-signing secret is generated automatically and stored in the attempt store. Optional variables:
+   - `HW7_ADMIN_PASSWORD`: if set (16+ characters), it also works as an instructor password.
+   - `HW7_ADMIN_SESSION_SECRET`: if set (32+ characters), it is used instead of the stored secret.
+   - `HW7_COURSE_CODE`: a course access code you give students. Leave unset to allow starts without a code. The correct value is checked on the server and is never embedded in browser code.
+   - `HW7_STORE_NAME`: defaults to `hw7-attempts-v3`. Give previews/testing a separate name if needed.
+   To replace a lost password, generate a long random one, put its SHA-256 hash in `builtInPasswordHash`, and redeploy.
 3. Open the deployed site, start a test attempt, answer some items, and confirm the progress status changes to recorded. Complete the test and verify the downloaded PDF.
 4. Visit `/admin/`, sign in using the instructor password, and verify that the test attempt appears. Start another visit with the same email and confirm both attempts appear.
 5. Publish the activity link, the illustrated instructions, and the due date in D2L. Students need no invitation or Identity account. **Netlify Identity is not used by this build.**
@@ -34,7 +35,7 @@ Do not deploy this as a static drag-and-drop folder: the Functions and Blobs dep
 
 The dashboard groups all attempts by entered email and shows start time, last recorded activity, 13-item completion, which sections were completed and the date/time each was completed (plus when all 13 were finished), current scene, labeling checks, Practical Check rounds, clues, first-round accuracy, and whether PDF generation was logged. Open an attempt for reasoning and the assessment event history. Summary CSV export is available and includes a completion date/time column for every section. Section completion times are recorded by the server the first time each section is finished in an attempt (`complete/<UUID>/<scene>` records); attempts logged before this change fall back to the browser's clock. Class patterns aggregate misses across all attempts, including repeat practice. The PDF in D2L remains the submission to grade.
 
-Instructor login is verified on the server. A signed, Secure, HttpOnly, SameSite=Strict cookie expires after eight hours. All index reads are protected, including direct endpoint requests. Configure the admin password and session secret before sharing the activity. Changing the session secret invalidates existing instructor sessions. The secret password is not stored in browser storage.
+Instructor login is verified on the server. A signed, Secure, HttpOnly, SameSite=Strict cookie keeps the instructor signed in on that browser for 30 days, or until they sign out. All index reads are protected, including direct endpoint requests. Changing the session secret, or deleting `config/admin-session-secret` from the store, signs out all instructor sessions. The secret password is not stored in browser storage.
 
 `Open authoring tools` checks the same instructor session. Sign in at `/admin/`, then use the link on the landing page or `/#author`. Edits remain preview-only until you export and replace `public/scenes.json`. Anatomical answers remain part of this client-side practice app; browser inspection can reveal them. This is instructional practice, not a secure examination.
 
